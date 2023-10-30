@@ -22,24 +22,18 @@ import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.PointList;
 
 import edu.whu.tmdb.query.Transaction;
-import edu.whu.tmdb.query.operations.Exception.TMDBException;
-import edu.whu.tmdb.query.operations.utils.SelectResult;
+import edu.whu.tmdb.query.utils.SelectResult;
 import edu.whu.tmdb.storage.memory.Tuple;
-import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -198,11 +192,11 @@ public class TorGraph {
         String id_vertex = getFileNameWithoutExtension(setting.ID_VERTEX_LOOKUP);
         PlainSelect plainSelect = new PlainSelect().withFromItem(new Table(id_vertex));
         plainSelect.addSelectItems(new AllColumns());
-        EqualsTo where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(setting.TorchBase));
+        EqualsTo where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(getFileNameWithoutExtension(setting.TorchBase)));
         plainSelect.setWhere(where);
         SelectResult id_vertex_result = transaction.query(new Select().withSelectBody(plainSelect));
         for (Tuple tuple : id_vertex_result.getTpl().tuplelist) {
-            int id = Integer.parseInt((String) tuple.tuple[1]);
+            int id = ((Long)tuple.tuple[1]).intValue();
             double lat = Double.parseDouble((String) tuple.tuple[2]);
             double lng = Double.parseDouble((String) tuple.tuple[3]);
 
@@ -239,14 +233,14 @@ public class TorGraph {
         String id_edge = getFileNameWithoutExtension(setting.ID_EDGE_LOOKUP);
         plainSelect = new PlainSelect().withFromItem(new Table(id_edge));
         plainSelect.addSelectItems(new AllColumns());
-        where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(setting.TorchBase));
+        where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(getFileNameWithoutExtension(setting.TorchBase)));
         plainSelect.setWhere(where);
         SelectResult id_edge_result = transaction.query(new Select().withSelectBody(plainSelect));
         for (Tuple tuple:
             id_edge_result.getTpl().tuplelist) {
-            int edgeId = Integer.parseInt((String)tuple.tuple[1]);
-            int vertexId1 = Integer.parseInt((String)tuple.tuple[2]);
-            int vertexId2 = Integer.parseInt((String)tuple.tuple[3]);
+            int edgeId = ((Long)tuple.tuple[1]).intValue();
+            int vertexId1 = ((Long)tuple.tuple[2]).intValue();
+            int vertexId2 = ((Long)tuple.tuple[3]).intValue();
             double len = Double.parseDouble((String)tuple.tuple[4]);
             TowerVertex t1 = idVertexLookup.get(vertexId1);
             TowerVertex t2 = idVertexLookup.get(vertexId2);

@@ -2,9 +2,8 @@ package edu.whu.tmdb.query;
 
 
 
-import au.edu.rmit.bdm.Torch.mapMatching.TorSaver;
-import edu.whu.tmdb.query.operations.impl.*;
-import edu.whu.tmdb.query.operations.torch.TorchConnect;
+import edu.whu.tmdb.query.excecute.impl.*;
+import edu.whu.tmdb.query.torch.TorchConnect;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
@@ -15,16 +14,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import edu.whu.tmdb.Log.LogManager;
-import edu.whu.tmdb.query.operations.Create;
-import edu.whu.tmdb.query.operations.CreateDeputyClass;
-import edu.whu.tmdb.query.operations.Delete;
-import edu.whu.tmdb.query.operations.Drop;
-import edu.whu.tmdb.query.operations.Exception.TMDBException;
-import edu.whu.tmdb.query.operations.Insert;
-import edu.whu.tmdb.query.operations.Select;
-import edu.whu.tmdb.query.operations.Update;
-import edu.whu.tmdb.query.operations.utils.MemConnect;
-import edu.whu.tmdb.query.operations.utils.SelectResult;
+import edu.whu.tmdb.query.excecute.Create;
+import edu.whu.tmdb.query.excecute.CreateDeputyClass;
+import edu.whu.tmdb.query.excecute.Delete;
+import edu.whu.tmdb.query.excecute.Drop;
+import edu.whu.tmdb.query.utils.TMDBException;
+import edu.whu.tmdb.query.excecute.Insert;
+import edu.whu.tmdb.query.excecute.Select;
+import edu.whu.tmdb.query.excecute.Update;
+import edu.whu.tmdb.query.utils.MemConnect;
+import edu.whu.tmdb.query.utils.SelectResult;
 import edu.whu.tmdb.storage.level.LevelManager;
 import edu.whu.tmdb.storage.memory.MemManager;
 import edu.whu.tmdb.storage.memory.Tuple;
@@ -72,7 +71,7 @@ public class Transaction {
             throw new RuntimeException("Use getInstance() method to get the single instance of this class.");
         }
         this.mem = MemManager.getInstance();
-        this.levelManager = mem.levelManager;
+        this.levelManager = MemManager.levelManager;
         this.memConnect=MemConnect.getInstance(mem);
 
     }
@@ -120,11 +119,17 @@ public class Transaction {
 
     }
 
-    public SelectResult query(String s) throws JSQLParserException {
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(s.getBytes());
-        //使用JSqlparser进行sql语句解析，会根据sql类型生成对应的语法树。
-        Statement stmt= CCJSqlParserUtil.parse(byteArrayInputStream);
-        SelectResult query = this.query("", -1, stmt);
+    public SelectResult query(String s)  {
+        SelectResult query = null;
+        try {
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(s.getBytes());
+            //使用JSqlparser进行sql语句解析，会根据sql类型生成对应的语法树。
+            Statement stmt = CCJSqlParserUtil.parse(byteArrayInputStream);
+            query = this.query("", -1, stmt);
+        }
+        catch (JSQLParserException e){
+            System.out.println(e.getMessage());
+        }
         return query;
     }
 
@@ -207,21 +212,25 @@ public class Transaction {
     }
 
     public void testMapMatching() {
-        TorchConnect torchConnect = new TorchConnect(memConnect,"Torch_Porto_test");
+        TorchConnect.init(memConnect,"Torch_Porto_test");
 //        torchConnect.insert("data/res/raw/porto_raw_trajectory.txt");
 //        this.SaveAll();
-        torchConnect.mapMatching();
+        TorchConnect.torchConnect.mapMatching();
+    }
+
+    public void initEngine(){
+        TorchConnect.init(memConnect,"Torch_Porto_test");
     }
 
     public void testEngine() throws IOException {
-        TorchConnect torchConnect = new TorchConnect(memConnect,"Torch_Porto_test");
-        torchConnect.initEngine();
-        torchConnect.test ();
+        TorchConnect.init(memConnect,"Torch_Porto_test");
+        TorchConnect.torchConnect.initEngine();
+        TorchConnect.torchConnect.test ();
     }
 
     public void insertIntoTrajTable() {
-        TorchConnect torchConnect = new TorchConnect(memConnect,"Torch_Porto_test");
-        torchConnect.insert("data/res/raw/porto_raw_trajectory.txt");
+        TorchConnect.init(memConnect,"Torch_Porto_test");
+        TorchConnect.torchConnect.insert("data/res/raw/porto_raw_trajectory.txt");
     }
 
 

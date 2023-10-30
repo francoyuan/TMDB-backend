@@ -3,7 +3,6 @@ package au.edu.rmit.bdm.Torch.queryEngine.query;
 import au.edu.rmit.bdm.Torch.base.FileSetting;
 import au.edu.rmit.bdm.Torch.base.Index;
 import au.edu.rmit.bdm.Torch.base.Torch;
-import au.edu.rmit.bdm.Torch.base.db.DBManager;
 import au.edu.rmit.bdm.Torch.base.db.TrajVertexRepresentationPool;
 import au.edu.rmit.bdm.Torch.base.invertedIndex.EdgeInvertedIndex;
 import au.edu.rmit.bdm.Torch.base.invertedIndex.VertexInvertedIndex;
@@ -17,8 +16,6 @@ import au.edu.rmit.bdm.Torch.mapMatching.algorithm.TorGraph;
 import au.edu.rmit.bdm.Torch.mapMatching.model.TowerVertex;
 import au.edu.rmit.bdm.Torch.queryEngine.model.TimeInterval;
 import au.edu.rmit.bdm.Torch.queryEngine.similarity.SimilarityFunction;
-import edu.whu.tmdb.query.operations.Exception.TMDBException;
-import net.sf.jsqlparser.JSQLParserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +52,7 @@ public class QueryPool extends HashMap<String, Query> {
         setting.update(props.uriPrefix);
         edgeInvertedIndex = new EdgeInvertedIndex(setting);
         //initialize queries and map-matching algorithm
-        DBManager.init(setting);
+//        DBManager.init(setting);
         init();
 
     }

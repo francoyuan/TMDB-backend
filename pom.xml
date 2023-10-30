@@ -183,6 +183,14 @@
             <!-- or 0.10-SNAPSHOT for the unstable -->
             <version>0.9.0</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.esotericsoftware/kryo -->
+        <dependency>
+            <groupId>com.esotericsoftware</groupId>
+            <artifactId>kryo</artifactId>
+            <version>5.5.0</version>
+        </dependency>
+
     </dependencies>
 
 

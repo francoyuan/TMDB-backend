@@ -5,17 +5,13 @@ import au.edu.rmit.bdm.Torch.base.model.TrajNode;
 import au.edu.rmit.bdm.Torch.base.model.Trajectory;
 import edu.whu.tmdb.storage.memory.Tuple;
 import edu.whu.tmdb.query.Transaction;
-import edu.whu.tmdb.query.operations.Exception.TMDBException;
-import edu.whu.tmdb.query.operations.utils.SelectResult;
-import edu.whu.tmdb.query.operations.utils.traj.TrajTrans;
-import net.sf.jsqlparser.JSQLParserException;
+import edu.whu.tmdb.query.utils.SelectResult;
+import edu.whu.tmdb.query.utils.traj.TrajTrans;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 import static edu.whu.tmdb.util.FileOperation.getFileNameWithoutExtension;
@@ -58,20 +54,17 @@ public class TrajReader {
         if (hasDate) sdfmt = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         Transaction transaction = Transaction.getInstance();
         SelectResult query=null;
-        try {
-            query = transaction.query("select * from traj" +
-                    " where traj_name='" + getFileNameWithoutExtension(trajSrcPath) + "';");
-        }catch (JSQLParserException e){
-            logger.warn(e.getMessage());
-        }
+        String sql="select * from traj" +
+                " where traj_name='" + getFileNameWithoutExtension(trajSrcPath) + "';";
+        query = transaction.query(sql);
         for (int i = 0; i < query.getTpl().tuplelist.size(); i++) {
             Tuple tuple = query.getTpl().tuplelist.get(i);
             if (i+1 % BATCH_SIZE == 0) {
                 logger.info("have readBatch {} trajectories in total", i);
                 return false;
             }
-            Trajectory<TrajEntry> trajectory = new Trajectory<>((String)tuple.tuple[0], false);
-            List<TrajEntry> traj = TrajTrans.getTraj((String) tuple.tuple[3]);
+            Trajectory<TrajEntry> trajectory = new Trajectory<>(tuple.tuple[0].toString(), false);
+            List<TrajEntry> traj = TrajTrans.getTraj((double[])tuple.tuple[3]);
             for (int j = 0; j < traj.size(); j++) {
                 trajectory.add(new TrajNode(traj.get(j).getLat(),traj.get(j).getLng()));
             }

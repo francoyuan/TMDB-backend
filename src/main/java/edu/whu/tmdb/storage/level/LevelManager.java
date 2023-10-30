@@ -2,8 +2,7 @@ package edu.whu.tmdb.storage.level;
 
 
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
+import edu.whu.tmdb.query.utils.KryoSerialization;
 import edu.whu.tmdb.storage.cache.CacheManager;
 import edu.whu.tmdb.storage.utils.Constant;
 
@@ -13,9 +12,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,8 +20,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 
 public class LevelManager {
@@ -71,7 +66,8 @@ public class LevelManager {
                 // 读取正文
                 byte[] buff = new byte[lengthToRead];
                 input.read(buff, 0, lengthToRead);
-                this.levelInfo = (Map<String, String>) JSON.parse(new String(buff));
+//                this.levelInfo = (Map<String, String>) JSON.parse(new String(buff));
+                this.levelInfo = (Map<String, String>) KryoSerialization.deserializeFromString(new String(buff));
             }
         }catch(FileNotFoundException e){
             e.printStackTrace();
@@ -106,7 +102,8 @@ public class LevelManager {
                 metaFile.createNewFile();
             }
             BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(metaFile));
-            String s_in = JSONObject.toJSONString(this.levelInfo);
+//            String s_in = JSONObject.toJSONString(this.levelInfo);
+            String s_in = KryoSerialization.serializeToString((HashMap<String, String>) this.levelInfo);
             byte[] in = s_in.getBytes();
             //System.out.println(in.length);
             byte[] meta = Constant.INT_TO_BYTES(in.length);
@@ -208,6 +205,8 @@ public class LevelManager {
         Set<Integer> ret = new HashSet<>();
         for(Object j : this.levels[level]){
             int fileSuffix2 =(Integer) j;
+            if(i==fileSuffix2)
+                continue;
             if(hasOverlap(i, fileSuffix2)){
                 ret.add(fileSuffix2);
             }
@@ -217,10 +216,10 @@ public class LevelManager {
 
     // 判断文件后缀为i1和i2的两个SSTable是否有重叠
     private boolean hasOverlap(int i1, int i2){
-        long min1 = Long.parseLong(this.levelInfo.get("" + i1).split("-")[2]);
-        long max1 = Long.parseLong(this.levelInfo.get("" + i1).split("-")[3]);
-        long min2 = Long.parseLong(this.levelInfo.get("" + i2).split("-")[2]);
-        long max2 = Long.parseLong(this.levelInfo.get("" + i2).split("-")[3]);
+        String min1 = (this.levelInfo.get("" + i1).split("-")[2]);
+        String max1 = (this.levelInfo.get("" + i1).split("-")[3]);
+        String min2 = (this.levelInfo.get("" + i2).split("-")[2]);
+        String max2 = (this.levelInfo.get("" + i2).split("-")[3]);
         return Constant.hasOverlap(min1, max1, min2, max2);
     }
 

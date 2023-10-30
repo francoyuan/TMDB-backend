@@ -1,18 +1,16 @@
 package edu.whu.tmdb.storage.memory;
 
-import com.alibaba.fastjson2.JSONObject;
-
 import edu.whu.tmdb.Log.LogManager;
+import edu.whu.tmdb.query.enums.DataType;
+import edu.whu.tmdb.query.utils.KryoSerialization;
 import edu.whu.tmdb.storage.cache.CacheManager;
 import edu.whu.tmdb.storage.level.LevelManager;
 import edu.whu.tmdb.storage.level.SSTable;
-import edu.whu.tmdb.storage.memory.Flush;
 import edu.whu.tmdb.storage.memory.SystemTable.*;
 import edu.whu.tmdb.storage.utils.Constant;
 import edu.whu.tmdb.storage.utils.K;
 import edu.whu.tmdb.storage.utils.V;
 import edu.whu.tmdb.util.FileOperation;
-import org.apache.lucene.util.RamUsageEstimator;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -136,13 +134,14 @@ public class MemManager {
         }else if(o instanceof Tuple){
             //先写日志
             K k = new K("t" + ((Tuple) o).tupleId);
-            V v = new V(JSONObject.toJSONString((Tuple) o));
-            logManager.WriteLog(k.key, (byte) 0,v.valueString);
+//            V v = new V(JSONObject.toJSONString((Tuple) o));
+            V v = new V(KryoSerialization.serializeToString((Tuple) o));
+//            logManager.WriteLog(k.key, (byte) 0,v.valueString);
             this.memTable.put(k, v);
             this.currentMemSize += k.key.length() + v.valueString.length();
 
             // 加入缓存
-            this.cacheManager.dataCache.put(k, v);
+//            this.cacheManager.dataCache.put(k, v);
 
             // 如果内存数据大小超过限制则开始compaction
             if(this.currentMemSize > Constant.MAX_MEM_SIZE){
@@ -362,8 +361,8 @@ public class MemManager {
             writeAccess.write(Constant.INT_TO_BYTES(item.attrname.length()));
             writeAccess.write(item.attrname.getBytes());
             // 存attrtype，String类型需要先存一个4字节int作为长度
-            writeAccess.write(Constant.INT_TO_BYTES(item.attrtype.length()));
-            writeAccess.write(item.attrtype.getBytes());
+            writeAccess.write(Constant.INT_TO_BYTES(item.attrtype.toString().length()));
+            writeAccess.write(item.attrtype.toString().getBytes());
             // 存classtype，String类型需要先存一个4字节int作为长度
             writeAccess.write(Constant.INT_TO_BYTES(item.classtype.length()));
             writeAccess.write(item.classtype.getBytes());
@@ -414,7 +413,7 @@ public class MemManager {
             len = raf.readInt();
             buffer = new byte[len];
             raf.read(buffer);
-            item.attrtype = new String(buffer);
+            item.attrtype = DataType.mapToDataType(new String(buffer)).get();
             cur += (Integer.BYTES + len);
             // 读classtype，String类型需要先读一个4字节int作为长度
             len = raf.readInt();

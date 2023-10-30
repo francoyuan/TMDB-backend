@@ -8,8 +8,7 @@ package edu.whu.tmdb;/*
  */
 
 import edu.whu.tmdb.query.Transaction;
-import edu.whu.tmdb.query.operations.Exception.TMDBException;
-import edu.whu.tmdb.query.operations.utils.SelectResult;
+import edu.whu.tmdb.query.utils.SelectResult;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
@@ -17,28 +16,52 @@ import net.sf.jsqlparser.statement.Statement;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import static edu.whu.tmdb.util.FileOperation.getFileNameWithoutExtension;
-
 public class Main {
     public static void main(String[] args) throws IOException {
 //        execute("CREATE CLASS id_vertex (name char,age int, salary int);");
-//        execute("select * from id_vertex limit 1;");
-//        execute("select * from traj;");
-//        execute("select * from trajectory_vertex limit 1;");
+//        execute("SELECT * FROM trajectory_vertex WHERE traj_name = 'Torch' LIMIT 100000");
+//        execute("SELECT * FROM trajectory_vertex WHERE traj_name = 'Torch'");
+//        execute("CREATE CLASS traj (traj_id int,user_id char,traj_name char,traj double[]);");
+//        execute("select edges from trajectory_edge_partial where id=1 and traj_name='Torch';");
+//        execute("select edges from trajectory_edge_partial where id=1;");
+//        execute("select * from traj");
+//        execute("select * from traj where traj_name='porto_raw_trajectory';");
+//        execute("SELECT * FROM trajectory_edge WHERE traj_name = 'Torch' LIMIT 100000");
 //        execute("CREATE CLASS company (name char,age int, salary int);");
 //        execute("INSERT INTO company VALUES (aa,20,1000);");
-//        execute("INSERT INTO company VALUES (ab,30,1000);");
+//        execute("INSERT INTO company VALUES (ab,30,Array[1000,2000]);");
 //        execute("INSERT INTO company VALUES (ac,40,1000);");
 //        execute("create selectdeputy deputy as select * from company limit 1;");
 //        execute("select * from traj"+
 //                " where traj_name='"+getFileNameWithoutExtension("data/res/raw/porto_raw_trajectory.txt")+"';");
-//        execute(args[0]);
-//        transaction.test();
-//        transaction.test2();
+//        execute("INSERT INTO company VALUES (ab,30,Array[-1000,2000]);");
+//          testTopkQuery();
+          testPathQuery();
+
 //        insertIntoTrajTable();
-        testMapMatching();
+//        testMapMatching();
 //        testEngine();
 //        testTorch3();
+    }
+
+    public static void testTopkQuery(){
+        Transaction transaction = Transaction.getInstance();
+        transaction.initEngine();
+        execute("select traj_id,traj\n" +
+                "from traj\n" +
+                "where traj_name='porto_raw_trajectory' and " +
+                "st_similarity(Trajectory(-8.639847,41.159826,-8.640351,41.159871,-8.642196,41.160114,-8.644455,41.160492,-8.646921,41.160951,-8.649999,41.161491,-8.653167,41.162031,-8.656434,41.16258,-8.660178,41.163192,-8.663112,41.163687,-8.666235,41.1642,-8.669169,41.164704,-8.670852,41.165136,-8.670942,41.166576,-8.66961,41.167962,-8.668098,41.168988,-8.66664,41.170005,-8.665767,41.170635,-8.66574,41.170671\n" +
+                "                              ), 3);");
+    }
+
+    public static void testPathQuery(){
+        Transaction transaction = Transaction.getInstance();
+        transaction.initEngine();
+        execute("select traj_id, traj\n" +
+                "from traj\n" +
+                "where traj_name='porto_raw_trajectory' and " +
+                "st_intersect(Trajectory(-8.639847,41.159826,-8.640351,41.159871,-8.642196,41.160114,-8.644455,41.160492,-8.646921,41.160951,-8.649999,41.161491,-8.653167,41.162031,-8.656434,41.16258,-8.660178,41.163192,-8.663112,41.163687,-8.666235,41.1642,-8.669169,41.164704,-8.670852,41.165136,-8.670942,41.166576,-8.66961,41.167962,-8.668098,41.168988,-8.66664,41.170005,-8.665767,41.170635,-8.66574,41.170671\n" +
+                "                             ));");
     }
 
     public static void insertIntoTrajTable(){
@@ -51,6 +74,8 @@ public class Main {
         Transaction transaction = Transaction.getInstance();
         transaction.testEngine();
     }
+
+
 
     public static void testMapMatching() {
         Transaction transaction = Transaction.getInstance();

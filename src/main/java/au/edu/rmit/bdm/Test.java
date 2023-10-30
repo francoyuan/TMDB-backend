@@ -1,7 +1,6 @@
 package au.edu.rmit.bdm;
 
 import au.edu.rmit.bdm.Torch.base.FileSetting;
-import au.edu.rmit.bdm.Torch.base.PathQueryIndex;
 import au.edu.rmit.bdm.Torch.base.Torch;
 import au.edu.rmit.bdm.Torch.base.db.DBManager;
 import au.edu.rmit.bdm.Torch.base.helper.MemoryUsage;
@@ -12,7 +11,6 @@ import au.edu.rmit.bdm.Torch.mapMatching.MapMatching;
 import au.edu.rmit.bdm.Torch.mapMatching.model.TowerVertex;
 import au.edu.rmit.bdm.Torch.queryEngine.Engine;
 import au.edu.rmit.bdm.Torch.queryEngine.query.QueryResult;
-import com.alibaba.fastjson2.function.impl.StringToAny;
 import com.graphhopper.GraphHopper;
 import com.graphhopper.reader.osm.GraphHopperOSM;
 import com.graphhopper.routing.util.CarFlagEncoder;
@@ -20,14 +18,11 @@ import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.routing.util.FlagEncoder;
 
 import edu.whu.tmdb.query.Transaction;
-import edu.whu.tmdb.query.operations.Exception.TMDBException;
-import edu.whu.tmdb.query.operations.utils.SelectResult;
+import edu.whu.tmdb.query.utils.SelectResult;
 import edu.whu.tmdb.storage.memory.Tuple;
-import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.parser.SimpleNode;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.deputyclass.CreateDeputyClass;
@@ -76,14 +71,15 @@ public class Test {
     public static void init(String baseDir, String trajSrcPath, String osmPath) {
         MapMatching mm = MapMatching.getBuilder().setBaseDir(baseDir).build(trajSrcPath,osmPath);
         mm.start();
-        setting=new FileSetting(baseDir);
+//        setting=new FileSetting(baseDir);
 
-        getAfew();
-        addTime();
-        DBManager.init(setting);
-        DBManager dbManager=DBManager.getDB();
-        dbManager.run();
+//        getAfew();
+//        addTime();
+//        DBManager.init(setting);
+//        DBManager dbManager=DBManager.getDB();
+//        dbManager.run();
     }
+
 
 
     public static void useOwnDataset() throws IOException {
@@ -150,7 +146,7 @@ public class Test {
         SelectResult edge = Transaction.getInstance().query(new Select().withSelectBody(edgePartialSelect));
 
         List<Tuple> tuplelist = edge.getTpl().tuplelist;
-        Map<String, Integer> map = tuplelist.stream().collect(Collectors.toMap(e -> (String) e.tuple[0], e -> ((String) e.tuple[0]).split(",").length));
+        Map<String, Integer> map = tuplelist.stream().collect(Collectors.toMap(e -> (String) e.tuple[1], e -> ((String) e.tuple[2]).split(",").length));
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         long cur = System.currentTimeMillis();

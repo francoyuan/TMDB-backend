@@ -13,12 +13,9 @@ import au.edu.rmit.bdm.Torch.mapMatching.model.TowerVertex;
 import au.edu.rmit.bdm.Torch.queryEngine.model.*;
 import au.edu.rmit.bdm.Torch.queryEngine.query.TrajectoryResolver;
 import au.edu.rmit.bdm.Torch.queryEngine.similarity.SimilarityFunction;
-import edu.whu.tmdb.query.operations.Exception.TMDBException;
-import net.sf.jsqlparser.JSQLParserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.*;
 
 import static au.edu.rmit.bdm.Torch.queryEngine.similarity.SimilarityFunction.*;

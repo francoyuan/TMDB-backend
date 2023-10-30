@@ -12,16 +12,13 @@ import au.edu.rmit.bdm.Torch.mapMatching.model.TowerVertex;
 import com.github.davidmoten.geo.GeoHash;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.NodeAccess;
+import edu.whu.tmdb.query.enums.DeputyType;
 import edu.whu.tmdb.storage.memory.Tuple;
 import edu.whu.tmdb.query.Transaction;
-import edu.whu.tmdb.query.operations.Exception.TMDBException;
-import edu.whu.tmdb.query.operations.utils.SelectResult;
-import edu.whu.tmdb.util.FileOperation;
-import net.sf.jsqlparser.JSQLParserException;
+import edu.whu.tmdb.query.utils.SelectResult;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.deputyclass.CreateDeputyClass;
@@ -120,7 +117,9 @@ public class TorSaver {
             saveMeta();
             saveIdVertexLookupTable();
             saveEdges();
+            transaction.SaveAll();
             getAfew();
+            transaction.SaveAll();
             addTime();
             edgeInvertedList.saveCompressed(setting.EDGE_INVERTED_INDEX);
             vertexInvertedIndex.saveCompressed(setting.VERTEX_INVERTED_INDEX);
@@ -156,7 +155,7 @@ public class TorSaver {
         List<Expression> expressions = new ArrayList<>();
         for (int i = 0; i < numNodes; i++){
             ExpressionList expressionList = new ExpressionList()
-                    .addExpressions(new StringValue(setting.TorchBase))
+                    .addExpressions(new StringValue(getFileNameWithoutExtension(setting.TorchBase)))
                     .addExpressions(new LongValue(""+i))
                     .addExpressions(new DoubleValue("" + nodeAccess.getLatitude(i)))
                     .addExpressions(new DoubleValue("" + nodeAccess.getLongitude(i)));
@@ -201,7 +200,7 @@ public class TorSaver {
             visited.add(edge.id);
             String[] split = edge.convertToDatabaseForm().split(Torch.SEPARATOR_1);
             ExpressionList rawExpressionList = new ExpressionList()
-                    .addExpressions(new StringValue(setting.TorchBase))
+                    .addExpressions(new StringValue(getFileNameWithoutExtension(setting.TorchBase)))
                     .addExpressions(new LongValue(split[0]))
                     .addExpressions(new StringValue(split[1]))
                     .addExpressions(new StringValue(split[2]))
@@ -212,7 +211,7 @@ public class TorSaver {
             raw_expressions.add(rowRawConstructor);
 
             ExpressionList expressionList = new ExpressionList()
-                    .addExpressions(new StringValue(setting.TorchBase))
+                    .addExpressions(new StringValue(getFileNameWithoutExtension(setting.TorchBase)))
                     .addExpressions(new LongValue(""+edge.id))
                     .addExpressions(new LongValue(""+graph.vertexIdLookup.get(edge.baseVertex.hash)))
                     .addExpressions(new LongValue(""+graph.vertexIdLookup.get(edge.adjVertex.hash)))
@@ -271,7 +270,7 @@ public class TorSaver {
         List<Expression> edgeExpressions = new ArrayList<>();
         for (Trajectory<TowerVertex> traj : mappedTrajectories) {
             ExpressionList vertexExpressionList = new ExpressionList()
-                    .addExpressions(new StringValue(setting.TorchBase))
+                    .addExpressions(new StringValue(getFileNameWithoutExtension(setting.TorchBase)))
                     .addExpressions(new LongValue(traj.id));
             StringBuilder vertexBuilder = new StringBuilder();
             String hash;
@@ -291,7 +290,7 @@ public class TorSaver {
             vertexExpressions.add(vertexConstructor);
 
             ExpressionList edgeExpressionList = new ExpressionList()
-                    .addExpressions(new StringValue(setting.TorchBase))
+                    .addExpressions(new StringValue(getFileNameWithoutExtension(setting.TorchBase)))
                     .addExpressions(new LongValue(traj.id));
             StringBuilder edgeBuilder = new StringBuilder();
             Iterator<TorEdge> iterator = traj.edges.iterator();
@@ -430,12 +429,12 @@ public class TorSaver {
         String edgePartial = getFileNameWithoutExtension(setting.TRAJECTORY_EDGE_REPRESENTATION_PATH_PARTIAL);
         PlainSelect edgePartialSelect = new PlainSelect().addSelectItems(new AllColumns());
         edgePartialSelect.withFromItem(new Table(edgePartial));
-        Expression whereExpression =new EqualsTo(new Column().withColumnName(edgePartial),new StringValue(edgePartial));
+        Expression whereExpression =new EqualsTo(new Column().withColumnName("traj_name"),new StringValue(getFileNameWithoutExtension(setting.TorchBase)));
         edgePartialSelect.setWhere(whereExpression);
-        SelectResult edge = Transaction.getInstance().query(new Select().withSelectBody(edgePartialSelect));
+        SelectResult edge = Transaction.getInstance().query((new Select().withSelectBody(edgePartialSelect)).toString());
 
         List<Tuple> tuplelist = edge.getTpl().tuplelist;
-        Map<String, Integer> map = tuplelist.stream().collect(Collectors.toMap(e -> (String) e.tuple[0], e -> ((String) e.tuple[0]).split(",").length));
+        Map<String, Integer> map = tuplelist.stream().collect(Collectors.toMap(e -> String.valueOf(e.tuple[1]), e -> ((String) e.tuple[2]).split(",").length));
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         long cur = System.currentTimeMillis();
@@ -475,7 +474,7 @@ public class TorSaver {
             Date d2 = new Date(individual_end);
 
             ExpressionList expressionList = new ExpressionList()
-                    .addExpressions(new StringValue(setting.TorchBase))
+                    .addExpressions(new StringValue(getFileNameWithoutExtension(setting.TorchBase)))
                     .addExpressions(new LongValue(""+entry.getKey()))
                     .addExpressions(new StringValue(sdf.format(d1)))
                     .addExpressions(new StringValue(sdf.format(d2)));
@@ -500,6 +499,7 @@ public class TorSaver {
         //需要创建名为trajectory_edge_partial的代理类
         String trajectory_edge_partial = getFileNameWithoutExtension(setting.TRAJECTORY_EDGE_REPRESENTATION_PATH_PARTIAL);
         CreateDeputyClass createEdgePartial= new CreateDeputyClass();
+        createEdgePartial.setType(DeputyType.SELECT_DEPUTY.getValue());
         //创建代理类的代理类名
         createEdgePartial.setDeputyClass(new Table(trajectory_edge_partial));
 
@@ -507,8 +507,8 @@ public class TorSaver {
         String edge = getFileNameWithoutExtension(setting.TRAJECTORY_EDGE_REPRESENTATION_PATH);
         PlainSelect edgeSelect = new PlainSelect();
         edgeSelect.addSelectItems(new AllColumns());
-        edgeSelect.setFromItem(new Table(getFileNameWithoutExtension(setting.TRAJECTORY_EDGE_REPRESENTATION_PATH)));
-        Expression whereExpression =new EqualsTo(new Column().withColumnName(edge),new StringValue(edge));
+        edgeSelect.setFromItem(new Table(getFileNameWithoutExtension(edge)));
+        Expression whereExpression =new EqualsTo(new Column().withColumnName("traj_name"),new StringValue(getFileNameWithoutExtension(setting.TorchBase)));
         edgeSelect.setWhere(whereExpression);
         Limit limit = new Limit();
         limit.setRowCount(new LongValue(""+100000));
@@ -518,20 +518,22 @@ public class TorSaver {
         createEdgePartial.setSelect(new Select().withSelectBody(edgeSelect));
 
         //执行query
-        Transaction.getInstance().query(createEdgePartial);
+        Transaction.getInstance().query(createEdgePartial.toString());
 
         //需要创建名为trajectory_vertex_partial的代理类
         String trajectory_vertex_partial = getFileNameWithoutExtension(setting.TRAJECTORY_VERTEX_REPRESENTATION_PATH_PARTIAL);
         CreateDeputyClass createVertexPartial= new CreateDeputyClass();
+        createVertexPartial.setType(DeputyType.SELECT_DEPUTY.getValue());
         //创建代理类的代理类名
         createVertexPartial.setDeputyClass(new Table(trajectory_vertex_partial));
 
         //设置select
+
         String vertex = getFileNameWithoutExtension(setting.TRAJECTORY_VERTEX_REPRESENTATION_PATH);
         PlainSelect vertexSelect = new PlainSelect();
         vertexSelect.addSelectItems(new AllColumns());
-        vertexSelect.setFromItem(new Table(getFileNameWithoutExtension(setting.TRAJECTORY_VERTEX_REPRESENTATION_PATH)));
-        whereExpression =new EqualsTo(new Column().withColumnName(vertex),new StringValue(vertex));
+        vertexSelect.setFromItem(new Table(getFileNameWithoutExtension(vertex)));
+        whereExpression =new EqualsTo(new Column().withColumnName("traj_name"),new StringValue(getFileNameWithoutExtension(setting.TorchBase)));
         vertexSelect.setWhere(whereExpression);
         vertexSelect.setLimit(limit);
 
@@ -539,7 +541,7 @@ public class TorSaver {
         createVertexPartial.setSelect(new Select().withSelectBody(vertexSelect));
 
         //执行query
-        Transaction.getInstance().query(createVertexPartial);
+        Transaction.getInstance().query(createVertexPartial.toString());
 
 //        List<String> edgeList = new ArrayList<>(200001);
 //        List<String> vertexList = new ArrayList<>(200001);
@@ -706,6 +708,7 @@ public class TorSaver {
         Column column_lng = new Column("lng");
         // Initialize the ArrayList and add the items
         List<Column> insertColumns = new ArrayList<>();
+        insertColumns.add(column_traj_name);
         insertColumns.add(column_id);
         insertColumns.add(column_lat);
         insertColumns.add(column_lng);
@@ -810,7 +813,7 @@ public class TorSaver {
         insertColumns.add(date2);
 
         Insert insert = new Insert().withTable(new Table(trajectoryTime)).withColumns(insertColumns).withSelect(new Select().withSelectBody(valuesStatement));
-        Transaction.getInstance().query(insert);
+        transaction.query(insert);
     }
 
 }
