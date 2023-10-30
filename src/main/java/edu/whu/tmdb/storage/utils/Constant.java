@@ -29,8 +29,8 @@ public class Constant {
     // level0 允许的最大SSTable数量
     public static final int MAX_LEVEL0_FILE_COUNT = 4;
 
-    // data block大小限制 4KB
-    public static final int MAX_DATA_BLOCK_SIZE = 4 * 1024;
+    // data block大小限制 16KB
+    public static final int MAX_DATA_BLOCK_SIZE = 32 * 1024;
 
     // 允许各level的总大小 8MB 10MB 100MB 1000MB
     public static final long MAX_LEVEL0_SIZE = 8L * 1024 * 1024;
@@ -98,11 +98,8 @@ public class Constant {
 
     // 判断区间[a, b]  [c, d]是否有重叠
     // 如果b<c或者d<a则没有重叠
-    public static boolean hasOverlap(long a, long b, long c, long d){
-        if(b <= c || d <= a)
-            return false;
-        else
-            return true;
+    public static boolean hasOverlap(String a, String b, String c, String d){
+        return !(b.compareTo(c)<0 || d.compareTo(a)<0);
     }
 
 

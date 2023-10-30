@@ -57,6 +57,8 @@ public class Flush{
 
         long t2 = System.currentTimeMillis();
 
+        System.out.println("flush用时"+(t2-t1)+"ms");
+
         // 判断是否触发级联compaction
         try{
             memManager.levelManager.autoCompaction();

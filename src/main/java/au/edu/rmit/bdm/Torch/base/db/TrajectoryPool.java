@@ -3,10 +3,8 @@ package au.edu.rmit.bdm.Torch.base.db;
 import au.edu.rmit.bdm.Torch.base.FileSetting;
 
 import edu.whu.tmdb.query.Transaction;
-import edu.whu.tmdb.query.operations.Exception.TMDBException;
-import edu.whu.tmdb.query.operations.utils.SelectResult;
+import edu.whu.tmdb.query.utils.SelectResult;
 import edu.whu.tmdb.storage.memory.Tuple;
-import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.schema.Column;
@@ -17,9 +15,6 @@ import net.sf.jsqlparser.statement.select.Select;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +26,7 @@ public abstract class TrajectoryPool {
     private boolean isMem;
     private Map<String, String[]> memPool;
 //    private DBManager2 db;
-    private DBManager db;
+//    private DBManager db;
     String tableName;
 
     FileSetting setting;
@@ -40,11 +35,11 @@ public abstract class TrajectoryPool {
         this.setting=setting;
 
         this.isMem = isMem;
-        if (!isMem) {
-            logger.info("init Torch_Porto.db version trajectory representation pool");
-            db = DBManager.getDB();
-            return;
-        }
+//        if (!isMem) {
+//            logger.info("init Torch_Porto.db version trajectory representation pool");
+////            db = DBManager.getDB();
+//            return;
+//        }
 
         logger.info("init memory version trajectory representation pool");
         memPool = new HashMap<>();
@@ -107,7 +102,16 @@ public abstract class TrajectoryPool {
 //                memPool.put((String)tuple.tuple[0]
 //                        , ((String)tuple.tuple[1]).split(","));
 //            }
-            String[] temp = db.get(tableName, trajId).split(",");
+            String sql="select edges from "+getFileNameWithoutExtension(setting.TRAJECTORY_EDGE_REPRESENTATION_PATH_PARTIAL)
+                    +" where id="+trajId
+                    +" and traj_name='"+getFileNameWithoutExtension(setting.TorchBase)+"';";
+            SelectResult query = Transaction.getInstance().query(sql);
+            String[] temp = new String[0];
+            if(!query.getTpl().tuplelist.isEmpty()){
+                Tuple tuple = query.getTpl().tuplelist.get(0);
+                temp = ((String)tuple.tuple[0]).split(",");
+            }
+//            String[] temp = db.get(tableName, trajId).split(",");
             ret = new int[temp.length];
             for (int i = 0; i < temp.length; i++)
                 ret[i] = Integer.valueOf(temp[i]);

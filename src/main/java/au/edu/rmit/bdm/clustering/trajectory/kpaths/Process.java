@@ -4,10 +4,8 @@ import au.edu.rmit.bdm.Torch.base.FileSetting;
 import au.edu.rmit.bdm.clustering.trajectory.TrajectoryMtree;
 
 import edu.whu.tmdb.query.Transaction;
-import edu.whu.tmdb.query.operations.Exception.TMDBException;
-import edu.whu.tmdb.query.operations.utils.SelectResult;
+import edu.whu.tmdb.query.utils.SelectResult;
 import edu.whu.tmdb.storage.memory.Tuple;
-import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.schema.Column;
@@ -18,10 +16,6 @@ import net.sf.jsqlparser.statement.select.Select;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
@@ -156,7 +150,7 @@ public class Process extends Thread {
 		String edgePartial = getFileNameWithoutExtension(path);
 		PlainSelect plainSelect = new PlainSelect().withFromItem(new Table(edgePartial));
 		plainSelect.addSelectItems(new AllColumns());
-		EqualsTo where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(setting.TorchBase));
+		EqualsTo where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(getFileNameWithoutExtension(setting.TorchBase)));
 		plainSelect.setWhere(where);
 		SelectResult result = Transaction.getInstance().query(new Select().withSelectBody(plainSelect));
 
@@ -232,7 +226,7 @@ public class Process extends Thread {
 		String idEdgeRaw = getFileNameWithoutExtension(edgePath);
 		PlainSelect plainSelect = new PlainSelect().withFromItem(new Table(idEdgeRaw));
 		plainSelect.addSelectItems(new AllColumns());
-		EqualsTo where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(setting.TorchBase));
+		EqualsTo where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(getFileNameWithoutExtension(setting.TorchBase)));
 		plainSelect.setWhere(where);
 		SelectResult result = Transaction.getInstance().query(new Select().withSelectBody(plainSelect));
 

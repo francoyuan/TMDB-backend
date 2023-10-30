@@ -10,13 +10,10 @@ import au.edu.rmit.bdm.Torch.mapMatching.algorithm.Mappers;
 import au.edu.rmit.bdm.Torch.mapMatching.algorithm.TorDijkstra;
 import au.edu.rmit.bdm.Torch.mapMatching.algorithm.TorGraph;
 import au.edu.rmit.bdm.Torch.mapMatching.model.TowerVertex;
-import edu.whu.tmdb.query.operations.Exception.TMDBException;
-import net.sf.jsqlparser.JSQLParserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 

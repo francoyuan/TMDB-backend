@@ -13,4 +13,15 @@
 		<appender-ref ref="consoleAppender" />
 	</logger>
 
+	<logger name="com.graphhopper.reader.osm">
+		<level value="DEBUG" />
+		<appender-ref ref="consoleAppender" />
+	</logger>
+
+	<root>
+		<priority value="DEBUG" />
+		<appender-ref ref="consoleAppender" />
+	</root>
+
+
 </log4j:configuration>

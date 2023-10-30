@@ -12,10 +12,8 @@ import au.edu.rmit.bdm.Torch.queryEngine.model.TimeInterval;
 import au.edu.rmit.bdm.Torch.queryEngine.model.TorchDate;
 
 import edu.whu.tmdb.query.Transaction;
-import edu.whu.tmdb.query.operations.Exception.TMDBException;
-import edu.whu.tmdb.query.operations.utils.SelectResult;
+import edu.whu.tmdb.query.utils.SelectResult;
 import edu.whu.tmdb.storage.memory.Tuple;
-import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.schema.Column;
@@ -26,9 +24,6 @@ import net.sf.jsqlparser.statement.select.Select;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.*;
 
 import static edu.whu.tmdb.util.FileOperation.getFileNameWithoutExtension;
@@ -78,7 +73,7 @@ public class TrajectoryResolver {
         String idVertex = getFileNameWithoutExtension(setting.ID_VERTEX_LOOKUP);
         PlainSelect plainSelect = new PlainSelect().withFromItem(new Table(idVertex));
         plainSelect.addSelectItems(new AllColumns());
-        EqualsTo where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(setting.TorchBase));
+        EqualsTo where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(getFileNameWithoutExtension(setting.TorchBase)));
         plainSelect.setWhere(where);
         SelectResult result = Transaction.getInstance().query(new Select().withSelectBody(plainSelect));
 
@@ -259,16 +254,16 @@ public class TrajectoryResolver {
         String idEdgeRaw = getFileNameWithoutExtension(setting.ID_EDGE_RAW);
         PlainSelect plainSelect = new PlainSelect().withFromItem(new Table(idEdgeRaw));
         plainSelect.addSelectItems(new AllColumns());
-        EqualsTo where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(setting.TorchBase));
+        EqualsTo where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(getFileNameWithoutExtension(setting.TorchBase)));
         plainSelect.setWhere(where);
         SelectResult result = Transaction.getInstance().query(new Select().withSelectBody(plainSelect));
 
         for (Tuple tuple :
                 result.getTpl().tuplelist) {
-            String[] tokens = (String[]) tuple.tuple;
-            int id = Integer.parseInt(tokens[0]);
-            String lats = tokens[1];
-            String lngs = tokens[2];
+//            String[] tokens = (String[]) tuple.tuple;
+            int id = ((Long)tuple.tuple[1]).intValue();
+            String lats = String.valueOf(tuple.tuple[2]);
+            String lngs = String.valueOf(tuple.tuple[3]);
 
             rawEdgeLookup.put(id, new String[]{lats, lngs});
         }
@@ -302,14 +297,16 @@ public class TrajectoryResolver {
         String time = getFileNameWithoutExtension(setting.TRAJECTORY_START_END_TIME_PARTIAL);
         PlainSelect plainSelect = new PlainSelect().withFromItem(new Table(time));
         plainSelect.addSelectItems(new AllColumns());
-        EqualsTo where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(setting.TorchBase));
+        EqualsTo where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(getFileNameWithoutExtension(setting.TorchBase)));
         plainSelect.setWhere(where);
         SelectResult result = Transaction.getInstance().query(new Select().withSelectBody(plainSelect));
 
         for (Tuple tuple :
                 result.getTpl().tuplelist) {
-            String[] c = (String[]) tuple.tuple;
-            timeSpanLookup.put(c[1], buildInterval(c[1], c[2], c[3]));
+//            String[] c = (String[]) tuple.tuple;
+            timeSpanLookup.put(String.valueOf(tuple.tuple[1]), buildInterval(String.valueOf(tuple.tuple[1]),
+                    (String) tuple.tuple[2],
+                    (String) tuple.tuple[3]));
         }
 
 //        try(FileReader fr = new FileReader(setting.TRAJECTORY_START_END_TIME_PARTIAL);

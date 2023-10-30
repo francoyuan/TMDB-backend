@@ -1,5 +1,7 @@
 package edu.whu.tmdb.storage.memory.SystemTable;
 
+import edu.whu.tmdb.query.enums.DataType;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -9,11 +11,11 @@ public class ClassTableItem implements Serializable {
     public int attrnum = 0;                //类属性个数
     public int    attrid = 0;
     public String attrname = "";         //属性名
-    public String attrtype = "";         //属性类型
+    public DataType attrtype;         //属性类型
     public String classtype = "";
     public String alias="";
 
-    public ClassTableItem(String classname, int classid, int attrnum,int attrid, String attrname, String attrtype,String classtype,String alias) {
+    public ClassTableItem(String classname, int classid, int attrnum,int attrid, String attrname, DataType attrtype,String classtype,String alias) {
         this.classname = classname;
         this.classid = classid;
         this.attrnum = attrnum;

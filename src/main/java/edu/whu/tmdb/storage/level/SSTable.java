@@ -207,8 +207,10 @@ public class SSTable {
         long dataBlockStartOffset = 0; // 此data block的开始偏移（记录B树结点时有用）
         long totalOffset = 0; // 总偏移
         K lastKey = new K(); // 记录上一个key
+        int i=0;
         // 遍历所有k-v
         for(Entry<K, V> entry : this.data.entrySet()){
+            i++;
             K key = entry.getKey();
             byte[] key_b = key.serialize();
             V value = entry.getValue();
