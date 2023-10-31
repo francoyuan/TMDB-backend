@@ -8,20 +8,21 @@
 		</layout>
 	</appender>
 
-	<logger name="au.edu.rmit.bdm">
+	<logger name="au.edu.rmit.bdm" additivity="false">
 		<level value="DEBUG"></level>
 		<appender-ref ref="consoleAppender" />
 	</logger>
 
-	<logger name="com.graphhopper.reader.osm">
-		<level value="DEBUG" />
-		<appender-ref ref="consoleAppender" />
-	</logger>
+<!--	<logger name="com.graphhopper.reader.osm" additivity="false">-->
+<!--		<level value="DEBUG" />-->
+<!--		<appender-ref ref="consoleAppender" />-->
+<!--	</logger>-->
 
-	<root>
-		<priority value="DEBUG" />
-		<appender-ref ref="consoleAppender" />
-	</root>
+
+<!--	<root>-->
+<!--		<priority value="DEBUG" />-->
+<!--		<appender-ref ref="consoleAppender" />-->
+<!--	</root>-->
 
 
 </log4j:configuration>

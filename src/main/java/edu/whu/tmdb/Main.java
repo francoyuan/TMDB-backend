@@ -24,7 +24,6 @@ public class Main {
 //        execute("CREATE CLASS traj (traj_id int,user_id char,traj_name char,traj double[]);");
 //        execute("select edges from trajectory_edge_partial where id=1 and traj_name='Torch';");
 //        execute("select edges from trajectory_edge_partial where id=1;");
-//        execute("select * from traj");
 //        execute("select * from traj where traj_name='porto_raw_trajectory';");
 //        execute("SELECT * FROM trajectory_edge WHERE traj_name = 'Torch' LIMIT 100000");
 //        execute("CREATE CLASS company (name char,age int, salary int);");
@@ -36,9 +35,10 @@ public class Main {
 //                " where traj_name='"+getFileNameWithoutExtension("data/res/raw/porto_raw_trajectory.txt")+"';");
 //        execute("INSERT INTO company VALUES (ab,30,Array[-1000,2000]);");
 //          testTopkQuery();
-          testPathQuery();
-
+//          testPathQuery();
+//        testStreamline();
 //        insertIntoTrajTable();
+//        execute("select * from traj");
 //        testMapMatching();
 //        testEngine();
 //        testTorch3();
@@ -64,6 +64,13 @@ public class Main {
                 "                             ));");
     }
 
+    public static void testStreamline() throws IOException {
+        String base="data/res/raw/";
+        Transaction.getInstance().streamLine("Torch",
+                base+"porto_raw_trajectory.txt",
+                base +"Porto.osm.pbf",
+                base+"query.txt");
+    }
     public static void insertIntoTrajTable(){
         Transaction transaction = Transaction.getInstance();
         transaction.insertIntoTrajTable();

@@ -68,8 +68,8 @@ public class Test {
 
     }
 
-    public static void init(String baseDir, String trajSrcPath, String osmPath) {
-        MapMatching mm = MapMatching.getBuilder().setBaseDir(baseDir).build(trajSrcPath,osmPath);
+    public static void init(String baseDir, String trajSrc, String osmPath) {
+        MapMatching mm = MapMatching.getBuilder().setBaseDir(baseDir).build(trajSrc,osmPath);
         mm.start();
 //        setting=new FileSetting(baseDir);
 
@@ -91,8 +91,13 @@ public class Test {
         QueryResult result = engine.findOnPath(queries.get(0));
     }
 
-    public static List<List<TrajEntry>> read() throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader("data/res/raw/query.txt"));
+    public static List<List<TrajEntry>> read() throws IOException{
+        return read("data/res/raw/query.txt");
+    }
+
+
+    public static List<List<TrajEntry>> read(String src) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(src));
         List<List<TrajEntry>> list = new ArrayList<>(3);
 
         String line;

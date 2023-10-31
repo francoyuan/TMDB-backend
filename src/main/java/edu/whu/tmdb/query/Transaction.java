@@ -211,23 +211,28 @@ public class Transaction {
         return selectResult;
     }
 
-    public void streamLine(String baseDir, String src) throws IOException {
-        insertIntoTrajTable(baseDir,src);
+    public void streamLine(String baseDir, String trajSrc,String osmSrc, String querySrc) throws IOException {
+        TorchConnect.init(memConnect,baseDir);
+
+        TorchConnect.torchConnect.insert(trajSrc);
         this.SaveAll();
-        testMapMatching(baseDir);
+
+        TorchConnect.torchConnect.mapMatching(trajSrc,osmSrc);
         this.SaveAll();
-        testEngine(baseDir);
+
+        TorchConnect.torchConnect.initEngine();
+        TorchConnect.torchConnect.test(querySrc);
     }
 
-    private void testEngine(String baseDir) throws IOException {
+    private void testEngine(String baseDir,String querySrc) throws IOException {
         TorchConnect.init(memConnect,baseDir);
         TorchConnect.torchConnect.initEngine();
-        TorchConnect.torchConnect.test ();
+        TorchConnect.torchConnect.test(querySrc);
     }
 
-    private void testMapMatching(String baseDir) {
+    private void testMapMatching(String baseDir, String trajSrc, String osmSrc) {
         TorchConnect.init(memConnect,baseDir);
-        TorchConnect.torchConnect.mapMatching();
+        TorchConnect.torchConnect.mapMatching(trajSrc,osmSrc);
     }
 
     private void insertIntoTrajTable(String baseDir,String src) {
@@ -236,10 +241,14 @@ public class Transaction {
     }
 
     public void testMapMatching() {
+        testMapMatching("data/res/raw/porto_raw_trajectory.txt","data/res/raw/Porto.osm.pbf");
+    }
+
+    public void testMapMatching(String trajSrc, String osmSrc) {
         TorchConnect.init(memConnect,"Torch_Porto_test");
 //        torchConnect.insert("data/res/raw/porto_raw_trajectory.txt");
 //        this.SaveAll();
-        TorchConnect.torchConnect.mapMatching();
+        TorchConnect.torchConnect.mapMatching(trajSrc,osmSrc);
     }
 
 
@@ -250,7 +259,7 @@ public class Transaction {
     public void testEngine() throws IOException {
         TorchConnect.init(memConnect,"Torch_Porto_test");
         TorchConnect.torchConnect.initEngine();
-        TorchConnect.torchConnect.test ();
+        TorchConnect.torchConnect.test();
     }
 
 

@@ -537,7 +537,7 @@ public class SelectImpl implements edu.whu.tmdb.query.excecute.Select {
         }
         ArrayList<ClassTableItem> classTableItemArrayList=new ArrayList<>();
         //构建classtableItemlist，返回selctResult需要
-        for(int i=0;i<tupleList.tuplelist.get(0).tuple.length;i++){
+        for(int i=0;!tupleList.tuplelist.isEmpty()&&i<tupleList.tuplelist.get(0).tuple.length;i++){
 
             ClassTableItem classTableItem=new ClassTableItem("", -1, tupleList.tuplelist.get(0).tuple.length,i, "attr"+i,
                     dataTypes.get(i),
