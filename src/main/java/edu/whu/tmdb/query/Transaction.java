@@ -211,18 +211,23 @@ public class Transaction {
         return selectResult;
     }
 
-    public void streamLine(String baseDir, String src) throws IOException {
-        insertIntoTrajTable(baseDir,src);
+    public void streamLine(String baseDir, String src, String querySrc) throws IOException {
+        TorchConnect.init(memConnect,baseDir);
+
+        TorchConnect.torchConnect.insert(src);
         this.SaveAll();
-        testMapMatching(baseDir);
+
+        TorchConnect.torchConnect.mapMatching();
         this.SaveAll();
-        testEngine(baseDir);
+
+        TorchConnect.torchConnect.initEngine();
+        TorchConnect.torchConnect.test(querySrc);
     }
 
-    private void testEngine(String baseDir) throws IOException {
+    private void testEngine(String baseDir,String querySrc) throws IOException {
         TorchConnect.init(memConnect,baseDir);
         TorchConnect.torchConnect.initEngine();
-        TorchConnect.torchConnect.test ();
+        TorchConnect.torchConnect.test(querySrc);
     }
 
     private void testMapMatching(String baseDir) {
@@ -250,7 +255,7 @@ public class Transaction {
     public void testEngine() throws IOException {
         TorchConnect.init(memConnect,"Torch_Porto_test");
         TorchConnect.torchConnect.initEngine();
-        TorchConnect.torchConnect.test ();
+        TorchConnect.torchConnect.test();
     }
 
 

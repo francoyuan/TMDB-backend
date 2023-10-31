@@ -48,11 +48,11 @@ public class MapMatching {
         this.props = props;
 
         //check trajSrcPath file
-        File trajFile = new File(props.trajSrcPath);
-        if (!trajFile.exists()) {
-            logger.error("{} does not exist", props.trajSrcPath);
-            throw new RuntimeException();
-        }
+//        File trajFile = new File(props.trajSrcPath);
+//        if (!trajFile.exists()) {
+//            logger.error("{} does not exist", props.trajSrcPath);
+//            throw new RuntimeException();
+//        }
 
         File PBFFile = new File(props.osmPath);
         if (!PBFFile.exists()){
