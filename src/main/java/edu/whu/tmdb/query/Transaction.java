@@ -211,7 +211,7 @@ public class Transaction {
         return selectResult;
     }
 
-    public void streamLine(String baseDir, String traj,String src) throws IOException {
+    public void streamLine(String baseDir, String src) throws IOException {
         insertIntoTrajTable(baseDir,src);
         this.SaveAll();
         testMapMatching(baseDir);
