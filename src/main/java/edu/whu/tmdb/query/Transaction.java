@@ -211,12 +211,37 @@ public class Transaction {
         return selectResult;
     }
 
+    public void streamLine(String baseDir, String traj,String src) throws IOException {
+        insertIntoTrajTable(baseDir,src);
+        this.SaveAll();
+        testMapMatching(baseDir);
+        this.SaveAll();
+        testEngine(baseDir);
+    }
+
+    private void testEngine(String baseDir) throws IOException {
+        TorchConnect.init(memConnect,baseDir);
+        TorchConnect.torchConnect.initEngine();
+        TorchConnect.torchConnect.test ();
+    }
+
+    private void testMapMatching(String baseDir) {
+        TorchConnect.init(memConnect,baseDir);
+        TorchConnect.torchConnect.mapMatching();
+    }
+
+    private void insertIntoTrajTable(String baseDir,String src) {
+        TorchConnect.init(memConnect,baseDir);
+        TorchConnect.torchConnect.insert(src);
+    }
+
     public void testMapMatching() {
         TorchConnect.init(memConnect,"Torch_Porto_test");
 //        torchConnect.insert("data/res/raw/porto_raw_trajectory.txt");
 //        this.SaveAll();
         TorchConnect.torchConnect.mapMatching();
     }
+
 
     public void initEngine(){
         TorchConnect.init(memConnect,"Torch_Porto_test");
@@ -227,6 +252,7 @@ public class Transaction {
         TorchConnect.torchConnect.initEngine();
         TorchConnect.torchConnect.test ();
     }
+
 
     public void insertIntoTrajTable() {
         TorchConnect.init(memConnect,"Torch_Porto_test");
