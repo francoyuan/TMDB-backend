@@ -29,7 +29,6 @@ public class CreateImpl implements Create {
         //获取新定义class具体元素
         ArrayList<ColumnDefinition> columnDefinitionArrayList= (ArrayList<ColumnDefinition>) stmt.getColumnDefinitions();
         String classname = stmt.getTable().toString();
-        int count = columnDefinitionArrayList.size();
         MemConnect.getClasst().maxid++;
         int classid = MemConnect.getClasst().maxid;
         for(ClassTableItem item : MemConnect.getClasst().classTable){
@@ -37,6 +36,10 @@ public class CreateImpl implements Create {
                 throw new TMDBException("table "+classname+"已经存在！");
             }
         }
+        if(columnDefinitionArrayList==null){
+            return true;
+        }
+        int count = columnDefinitionArrayList.size();
         for (int i = 0; i < count; i++) {
             ClassTableItem ori = new ClassTableItem(classname, classid, count, i,
                     columnDefinitionArrayList.get(i).getColumnName(),

@@ -487,7 +487,9 @@ public class LEVI implements WindowQueryIndex, TopKQueryIndex {
                     continue;
                 Trajectory<TrajEntry> t = new Trajectory<>();
                 for (int entry : trajectory) {
-                    t.add(idVertexLookup.get(entry));
+                    if(idVertexLookup.get(entry)!=null) {
+                        t.add(idVertexLookup.get(entry));
+                    }
                 }
 
                 double realDist = 0;

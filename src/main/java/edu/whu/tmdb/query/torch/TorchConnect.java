@@ -108,13 +108,17 @@ public class TorchConnect {
     }
 
     public List<Trajectory<TrajEntry>> topkQuery(Trajectory trajectory,int k,String similarityFunction)  {
-//        engine=Engine.getBuilder().preferedSimilarityMeasure(similarityFunction).baseDir(baseDir).build();
+        engine=Engine.getBuilder().preferedSimilarityMeasure(similarityFunction).preferedIndex(Torch.Index.LEVI).baseDir(baseDir).build();
+        long start=System.currentTimeMillis();
         QueryResult onPath = engine.findTopK(trajectory,k);
+        long end=System.currentTimeMillis();
+        long duration = (end - start) / 1_000_000; // 转换为毫秒
+        System.out.println("TopK 查询消耗： "+duration);
         return onPath.resolvedRet;
     }
 
     public List<Trajectory<TrajEntry>> topkQuery(Trajectory trajectory,int k){
-        QueryResult onPath = engine.findTopK(trajectory,k);
+        QueryResult onPath = this.engine.findTopK(trajectory,k);
         return onPath.resolvedRet;
     }
 

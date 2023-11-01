@@ -237,8 +237,8 @@ public class SimilarityFunction<T extends TrajEntry> {
         ArrayList<Double> minDistances2 = new ArrayList();
 
         int i;
-        for (i = 0; i < dist_matrix.length; ++i) {
-            for (int j = 0; j < dist_matrix[0].length; ++j) {
+        for (i = 0; i < dist_matrix.length; i++) {
+            for (int j = 0; j < dist_matrix[0].length; j++) {
                 dist_matrix[i][j] = distFunc.apply(t1.get(j), t2.get(i));
             }
         }

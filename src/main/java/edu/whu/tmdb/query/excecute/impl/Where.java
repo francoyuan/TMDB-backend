@@ -8,6 +8,7 @@ import edu.whu.tmdb.storage.memory.MemManager;
 import edu.whu.tmdb.query.torch.TorchConnect;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
@@ -18,9 +19,7 @@ import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import edu.whu.tmdb.query.utils.TMDBException;
 import edu.whu.tmdb.query.excecute.Select;
@@ -30,9 +29,15 @@ import edu.whu.tmdb.query.utils.SelectResult;
 import edu.whu.tmdb.query.utils.traj.TrajTrans;
 import edu.whu.tmdb.storage.memory.Tuple;
 import edu.whu.tmdb.storage.memory.TupleList;
+import org.apache.commons.math3.analysis.function.Exp;
+import org.checkerframework.checker.units.qual.A;
+
+import static org.apache.commons.math3.distribution.fitting.MultivariateNormalMixtureExpectationMaximization.estimate;
 
 public class  Where {
     private MemConnect memConnect;
+
+    private List<List<Expression>> orExpressionList=new ArrayList<>();
 
     public Where() throws TMDBException, IOException {
         this.memConnect=MemConnect.getInstance(MemManager.getInstance());
@@ -40,27 +45,108 @@ public class  Where {
 
     Formula formula=new Formula();
     public SelectResult where(PlainSelect plainSelect, SelectResult selectResult) throws TMDBException, IOException {
-        execute(plainSelect.getWhere(),selectResult);
-
+        ArrayList<Expression> temp = new ArrayList<>();
+        orExpressionList.add(temp);
+        execute(plainSelect.getWhere(),temp);
+        handleOr(selectResult);
         return selectResult;
     }
 
-    //核心类，将整个where语法树进行后续遍历
+    public SelectResult handleOr(SelectResult selectResult) throws TMDBException, IOException {
+        selectResult=handleAnd(orExpressionList.get(0),selectResult);
+        for (int i = 1; i < orExpressionList.size(); i++) {
+             selectResult = or(selectResult, handleAnd(orExpressionList.get(i), selectResult));
+        }
+        return selectResult;
+    }
+
+    public SelectResult handleAnd(List<Expression> expressions,SelectResult selectResult) throws TMDBException, IOException {
+        if(expressions.size()>1){
+           expressions=getOperationSequence(expressions);
+        }
+        for (int i = 0; i < expressions.size(); i++){
+            Expression e = expressions.get(i);
+            selectResult=execute(e,selectResult);
+        }
+        return selectResult;
+    }
+
+    public List<Expression> getOperationSequence(List<Expression> expressions){
+        PriorityQueue<Object[]> queue=new PriorityQueue<>(new Comparator<Object[]>() {
+            @Override
+            public int compare(Object[] o1, Object[] o2) {
+                return ((int)o1[0])-((int)o2[0]);
+            }
+        });
+        for (int i = 0; i < expressions.size(); i++) {
+            Expression e=expressions.get(i);
+            queue.offer(new Object[]{estimate(e),e});
+        }
+        ArrayList<Expression> res=new ArrayList<>();
+        while(!queue.isEmpty()){
+            res.add((Expression) queue.poll()[1]);
+        }
+        return res;
+    }
+
+    public int estimate(Expression expression){
+        switch(expression.getClass().getSimpleName()){
+            case "InExpression": return 1;
+            case "EqualsTo": return 10;
+            case "MinorThan": return 100;
+            case "GreaterThan": return 100;
+            case "Function": return 1000+functionEstimate((Function)expression);
+            default: return Integer.MAX_VALUE;
+        }
+    }
+
+    public int functionEstimate(Function expression){
+//        String name = expression.getName();
+//        switch(name.toLowerCase()){
+//            case "st_within": return
+//            case "st_intersect": return
+//            case "st_contain": return
+//            case "st_similarity": return
+//        }
+//        return null;
+        return 0;
+    }
+
+
+
+
     public SelectResult execute(Expression expression,SelectResult selectResult) throws TMDBException, IOException {
         SelectResult res=new SelectResult();
 //        if(selectResult.getTpl().tuplelist.isEmpty()) return selectResult;
         String a=expression.getClass().getSimpleName();
         switch (a){
-            case "OrExpression": res=orExpression((OrExpression) expression,selectResult); break;
-            case "AndExpression": res=andExpression((AndExpression) expression,selectResult); break;
             case "InExpression": res=inExpression((InExpression) expression,selectResult); break;
             case "EqualsTo": res=equalsToExpression((EqualsTo) expression,selectResult); break;
             case "MinorThan": res=minorThan((MinorThan) expression,selectResult); break;
             case "GreaterThan": res=greaterThan((GreaterThan) expression,selectResult); break;
             case "Function": res=function((Function)expression,selectResult); break;
-
         }
         return res;
+    }
+
+    public void execute(Expression expression,ArrayList<Expression> list) throws TMDBException, IOException {
+        SelectResult res=new SelectResult();
+//        if(selectResult.getTpl().tuplelist.isEmpty()) return selectResult;
+        String a=expression.getClass().getSimpleName();
+        switch (a){
+            case "OrExpression":
+                ArrayList<Expression> temp=new ArrayList<>();
+                orExpressionList.add(temp);
+                execute(((OrExpression) expression).getLeftExpression(),temp);
+                execute(((OrExpression) expression).getRightExpression(),list);
+                break;
+            case "AndExpression":
+                execute(((AndExpression) expression).getLeftExpression(),list);
+                execute(((AndExpression) expression).getRightExpression(),list);
+                break;
+            default:
+                list.add(expression); break;
+        }
     }
 
     private SelectResult function(Function expression, SelectResult selectResult)  {
@@ -92,7 +178,7 @@ public class  Where {
             return TrajTrans.getSelectResultByTrajList(trajectories, selectResult);
         }
         else{
-            String similarityFunction=expressions.get(2).toString();
+            String similarityFunction=((StringValue)expressions.get(2)).getValue();
             List<Trajectory<TrajEntry>> trajectories = TorchConnect.getTorchConnect().topkQuery(trajEntries, k,similarityFunction);
             return TrajTrans.getSelectResultByTrajList(trajectories,selectResult);
         }
@@ -188,18 +274,14 @@ public class  Where {
         return getSelectResultFromSet(selectResult,overlap);
     }
 
-    public SelectResult orExpression(OrExpression expression,SelectResult selectResult) throws TMDBException, IOException {
-        Expression left=expression.getLeftExpression();
-        Expression right=expression.getRightExpression();
-        SelectResult selectResult1=execute(left,selectResult);
-        SelectResult selectResult2=execute(right,selectResult);
+    public SelectResult or(SelectResult selectResult1,SelectResult selectResult2) throws TMDBException, IOException {
         HashSet<Tuple> selectResultSet1=getTupleSet(selectResult1);
         HashSet<Tuple> selectResultSet2=getTupleSet(selectResult2);
         //将selectResultSet2中tuple加入selectResultSet1中，这里将selectResultSet1作为结果集合
         for(Tuple tuple:selectResultSet2){
             selectResultSet1.add(tuple);
         }
-        return getSelectResultFromSet(selectResult,selectResultSet1);
+        return getSelectResultFromSet(selectResult1,selectResultSet1);
     }
 
     public SelectResult inExpression(InExpression expression, SelectResult selectResult) throws TMDBException, IOException {

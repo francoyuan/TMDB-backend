@@ -223,10 +223,10 @@ public class Transaction {
 
     public void initEngine(String baseDir){
         TorchConnect.init(memConnect,baseDir);
+        TorchConnect.torchConnect.initEngine();
     }
     private void Engine(String baseDir,String querySrc) throws IOException {
         initEngine(baseDir);
-        TorchConnect.torchConnect.initEngine();
         TorchConnect.torchConnect.test(querySrc);
     }
 
