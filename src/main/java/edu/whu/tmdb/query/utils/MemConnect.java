@@ -64,9 +64,7 @@ public class MemConnect {
 
     //获取tuple
     public Tuple GetTuple(int id) {
-//        rwLock.readLock().lock(); // 获取读锁
         Tuple t = null;
-//        try {
             Object searchResult = this.mem.search(new K("t" + id));
             if (searchResult == null)
                 t= null;
@@ -77,30 +75,15 @@ public class MemConnect {
                 t= (Tuple) KryoSerialization.deserializeFromString(((V) searchResult).valueString);
         if (t.delete)
                 t= null;
-//        }finally {
-//            rwLock.readLock().unlock();
             return t;
-//        }
     }
 
     //插入tuple
     public void InsertTuple(Tuple tuple) {
-//        rwLock.writeLock().lock(); // 获取写锁
-//        try {
-            this.mem.add(tuple);
-//        }finally {
-//            rwLock.writeLock().unlock();
-//        }
+        this.mem.add(tuple);
     }
 
-//    public void InsertTupleList(TupleList tupleList) {
-//        rwLock.writeLock().lock(); // 获取写锁
-//        try {
-//            this.mem.add(tuple);
-//        }finally {
-//            rwLock.writeLock().unlock();
-//        }
-//    }
+
 
     //删除tuple
     public void DeleteTuple(int id) {
@@ -171,23 +154,6 @@ public class MemConnect {
         }
     }
 
-    public static class OandB {
-        public List<ObjectTableItem> o = new ArrayList<>();
-        public List<BiPointerTableItem> b = new ArrayList<>();
-
-        public OandB() {
-        }
-
-        public OandB(MemConnect.OandB oandB) {
-            this.o = oandB.o;
-            this.b = oandB.b;
-        }
-
-        public OandB(List<ObjectTableItem> o, List<BiPointerTableItem> b) {
-            this.o = o;
-            this.b = b;
-        }
-    }
 
 
     public static ObjectTable getTopt() {

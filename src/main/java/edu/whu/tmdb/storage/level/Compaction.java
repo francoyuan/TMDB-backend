@@ -46,7 +46,7 @@ public class Compaction{
         // 统计、打印信息
         long t2 = System.currentTimeMillis();
 
-        System.out.println("compaction用时"+(t2-t1)+"ms");
+//        System.out.println("compaction用时"+(t2-t1)+"ms");
 
         //Log.addLog("compact SSTables(" + str1 + "),开始时间：" + new Timestamp(t1) + ",完成时间：" + new Timestamp(t2) + ",耗时：" + (t2 - t1) + "ms");
         //Statistics.info.add("compact SSTables(" + str1 + "),开始时间：" + new Timestamp(t1) +  ",完成时间：" + new Timestamp(t2) + ",耗时：" + (t2 - t1) + "ms");

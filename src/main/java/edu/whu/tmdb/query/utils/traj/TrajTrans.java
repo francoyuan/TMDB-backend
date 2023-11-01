@@ -51,10 +51,6 @@ public class TrajTrans {
         return sb.toString();
     }
 
-    public static String getTmdbTraj(String s){
-        return s.replace("[","").replace("]","").replace(",","|");
-    }
-
     public static SelectResult getSelectResultByTrajList(List<Trajectory<TrajEntry>> list, SelectResult selectResult){
         TupleList tupleList=new TupleList();
         for (int i = 0; i < list.size(); i++) {

@@ -224,13 +224,16 @@ public class Transaction {
         TorchConnect.torchConnect.test(querySrc);
     }
 
-    private void testEngine(String baseDir,String querySrc) throws IOException {
+    public void initEngine(String baseDir){
         TorchConnect.init(memConnect,baseDir);
+    }
+    private void Engine(String baseDir,String querySrc) throws IOException {
+        initEngine(baseDir);
         TorchConnect.torchConnect.initEngine();
         TorchConnect.torchConnect.test(querySrc);
     }
 
-    private void testMapMatching(String baseDir, String trajSrc, String osmSrc) {
+    private void MapMatching(String baseDir, String trajSrc, String osmSrc) {
         TorchConnect.init(memConnect,baseDir);
         TorchConnect.torchConnect.mapMatching(trajSrc,osmSrc);
     }
@@ -240,33 +243,7 @@ public class Transaction {
         TorchConnect.torchConnect.insert(src);
     }
 
-    public void testMapMatching() {
-        testMapMatching("data/res/raw/porto_raw_trajectory.txt","data/res/raw/Porto.osm.pbf");
-    }
 
-    public void testMapMatching(String trajSrc, String osmSrc) {
-        TorchConnect.init(memConnect,"Torch_Porto_test");
-//        torchConnect.insert("data/res/raw/porto_raw_trajectory.txt");
-//        this.SaveAll();
-        TorchConnect.torchConnect.mapMatching(trajSrc,osmSrc);
-    }
-
-
-    public void initEngine(){
-        TorchConnect.init(memConnect,"Torch_Porto_test");
-    }
-
-    public void testEngine() throws IOException {
-        TorchConnect.init(memConnect,"Torch_Porto_test");
-        TorchConnect.torchConnect.initEngine();
-        TorchConnect.torchConnect.test();
-    }
-
-
-    public void insertIntoTrajTable() {
-        TorchConnect.init(memConnect,"Torch_Porto_test");
-        TorchConnect.torchConnect.insert("data/res/raw/porto_raw_trajectory.txt");
-    }
 
 
 }
