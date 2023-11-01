@@ -211,7 +211,7 @@ public class Transaction {
         return selectResult;
     }
 
-    public void streamLine(String baseDir, String trajSrc,String osmSrc, String querySrc) throws IOException {
+    public void mapMatching(String baseDir, String trajSrc,String osmSrc) throws IOException {
         TorchConnect.init(memConnect,baseDir);
 
         TorchConnect.torchConnect.insert(trajSrc);
@@ -219,9 +219,6 @@ public class Transaction {
 
         TorchConnect.torchConnect.mapMatching(trajSrc,osmSrc);
         this.SaveAll();
-
-        TorchConnect.torchConnect.initEngine();
-        TorchConnect.torchConnect.test(querySrc);
     }
 
     public void initEngine(String baseDir){
