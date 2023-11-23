@@ -1,5 +1,7 @@
 package au.edu.rmit.bdm.Torch.base;
 
+import edu.whu.tmdb.storage.utils.Constant;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +31,7 @@ public class FileSetting {
     public String TRAJECTORY_START_END_TIME_PARTIAL;
 
     //for Torch_Porto.db
-    public String DB_PREFIX = "jdbc:sqlite:";
+//    public String DB_PREFIX = "jdbc:sqlite:";
     public String DB_URL;
     public String TRAJECTORY_VERTEX_TABLE = "vertex";
     public String TRAJECTORY_EDGE_TABLE = "edge";
@@ -61,11 +63,14 @@ public class FileSetting {
         TRAJECTORY_START_END_TIME_PARTIAL = TorchBase + "/trajectory_time_partial.txt";
 
         //for Torch_Porto.db
-        DB_URL = DB_PREFIX+ TorchBase +"/db/data.db";
+//        DB_URL = DB_PREFIX+ TorchBase +"/db/data.db";
 
         RAW_TRAJECTORY_INDEX = TorchBase + "/raw_trajectories";
         GRID_INDEX = TorchBase + "/grid_vertex.idx";RTREE_INDEX = TorchBase + "/rtree_raw.idx";
 
+        if(Constant.ROOT.equals("")) {
+            update(Constant.ROOT);
+        }
         modifyForWinOS();
     }
 
@@ -86,8 +91,8 @@ public class FileSetting {
         GRID_INDEX = this.prefix + GRID_INDEX;
         RTREE_INDEX = this.prefix + RTREE_INDEX;
 
-        DB_URL = DB_PREFIX + this.prefix + DB_URL.split(":")[2];
-        System.err.println(DB_URL);
+//        DB_URL = DB_PREFIX + this.prefix + DB_URL.split(":")[2];
+//        System.err.println(DB_URL);
         RAW_TRAJECTORY_INDEX = this.prefix + "/raw_trajectories";
 
         modifyForWinOS();

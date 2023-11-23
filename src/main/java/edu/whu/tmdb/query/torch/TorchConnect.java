@@ -1,5 +1,8 @@
 package edu.whu.tmdb.query.torch;
 
+import au.edu.rmit.bdm.Torch.base.db.TrajectoryPool;
+import au.edu.rmit.bdm.Torch.queryEngine.query.QueryPool;
+import au.edu.rmit.bdm.Torch.queryEngine.query.TrajectoryResolver;
 import edu.whu.tmdb.query.Transaction;
 import edu.whu.tmdb.query.torch.proto.IdEdge;
 import edu.whu.tmdb.query.torch.proto.IdEdgeRaw;
@@ -10,9 +13,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import au.edu.rmit.bdm.Test;
 import au.edu.rmit.bdm.Torch.base.Torch;
@@ -44,11 +45,23 @@ public class TorchConnect {
     MemConnect memConnect;
     public static TorchConnect torchConnect;
 
+    private boolean init = false;
+
     public TorchConnect(MemConnect memConnect, String baseDir){
         this.baseDir=Constants.TORCH_RES_BASE_DIR+"/"+baseDir;
         this.memConnect=memConnect;
 //        this.engine=Engine.getBuilder().baseDir(baseDir).build();
 //        this.helper=new TorchSQLiteHelper(this.baseDir+"/Torch/db/"+baseDir+".db");
+    }
+
+    public void updateTrajMap(ArrayList<String> trajIds){
+        Map<String, String[]> trajs = this.engine.getPool().getResolver().getTrajectoryPool().getMemPool();
+        Map<String, String[]> res=new HashMap<>();
+        for (String trajId :
+                trajIds) {
+            res.put(trajId,trajs.get(trajId));
+        }
+        this.engine.getPool().getResolver().getTrajectoryPool().setMemPool(res);
     }
 
     public static void init(MemConnect memConnect, String baseDir){
@@ -78,8 +91,9 @@ public class TorchConnect {
     }
 
     public void initEngine() {
+        if(init) return;
         engine=Engine.getBuilder().baseDir(baseDir).build();
-//        System.out.println(1);
+        init=true;
     }
 
     public List<Trajectory<TrajEntry>> rangeQuery(SearchWindow searchWindow){

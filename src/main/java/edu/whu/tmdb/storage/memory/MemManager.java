@@ -120,7 +120,6 @@ public class MemManager {
 
     // 往MemManager中添加对象
     public void add(Object o){
-
         if(o instanceof ObjectTableItem){
             this.objectTable.objectTable.add((ObjectTableItem) o);
         }else if(o instanceof BiPointerTableItem){
@@ -549,8 +548,8 @@ public class MemManager {
             // 读rule
             int len = raf.readInt();
             byte[] buffer = new byte[len];
-            len = raf.readInt();
-            buffer = new byte[len];
+//            len = raf.readInt();
+//            buffer = new byte[len];
             raf.read(buffer);
             item.rule = new String(buffer);
             cur += (Integer.BYTES + len);

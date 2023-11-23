@@ -164,21 +164,7 @@ public class TorSaver {
         }
         ValuesStatement valuesStatement = new ValuesStatement().withExpressions(new ExpressionList().withExpressions(expressions));
         idVertexInsert(valuesStatement);
-//        try(BufferedWriter writer = new BufferedWriter(new FileWriter(setting.ID_VERTEX_LOOKUP, false))){
-//            StringBuilder builder = new StringBuilder();
-//            for (int i = 0; i < numNodes; i++){
-//                builder.append(i).append(";")
-//                        .append(nodeAccess.getLatitude(i)).append(";")
-//                        .append(nodeAccess.getLongitude(i));
-//
-//                writer.write(builder.toString());
-//                writer.newLine();
-//                builder.setLength(0);
-//            }
-//            writer.flush();
-//        }catch (IOException e){
-//            logger.error(e.getMessage());
-//        }
+
     }
 
     private void saveEdges()  {
@@ -224,36 +210,6 @@ public class TorSaver {
         idEdgeRawInsert(rawValuesStatement);
         idEdgeInsert(valuesStatement);
 
-//        try(BufferedWriter rawWriter = new BufferedWriter(new FileWriter(setting.ID_EDGE_RAW));
-//            BufferedWriter writer = new BufferedWriter(new FileWriter(setting.ID_EDGE_LOOKUP))) {
-//
-//            StringBuilder builder = new StringBuilder();
-//            Set<Integer> visited = new HashSet<>();
-//
-//            for (TorEdge edge : edges){
-//
-//                if (visited.contains(edge.id)) continue;
-//                visited.add(edge.id);
-//
-//                rawWriter.write(edge.convertToDatabaseForm());
-//                rawWriter.newLine();
-//
-//                builder.append(edge.id).append(Torch.SEPARATOR_1)
-//                       .append(graph.vertexIdLookup.get(edge.baseVertex.hash)).append(Torch.SEPARATOR_1)
-//                       .append(graph.vertexIdLookup.get(edge.adjVertex.hash)).append(Torch.SEPARATOR_1)
-//                       .append(edge.getLength());
-//
-//                writer.write(builder.toString());
-//                writer.newLine();
-//                builder.setLength(0);
-//            }
-//
-//            rawWriter.flush();
-//            writer.flush();
-//
-//        }catch (IOException e){
-//            logger.error(e.getMessage());
-//        }
     }
 
     private void saveMappedTrajectories(List<Trajectory<TowerVertex>> mappedTrajectories)  {
@@ -307,123 +263,10 @@ public class TorSaver {
         trajectoryVertexInsert(vertexValuesStatement);
         trajectoryEdgeInsert(edgevaluesStatement);
 
-//        //write vertex id representation of trajectories.
-//        try(BufferedWriter writer = new BufferedWriter(new FileWriter(setting.TRAJECTORY_VERTEX_REPRESENTATION_PATH,append))) {
-//
-//            StringBuilder trajBuilder = new StringBuilder();
-//            String hash;
-////            for (Trajectory<TowerVertex> traj : mappedTrajectories) {
-////                trajBuilder.append(traj.id).append(";");
-////
-////                for (TowerVertex vertex : traj) {
-////                    hash = GeoHash.encodeHash(vertex.lat, vertex.lng);
-////                    Integer id = graph.vertexIdLookup.get(hash);
-////
-////                    if (id == null)
-////                        logger.error("a mapped edge is missing when processing trajectory id "+ traj.id);
-////                    else
-////                        trajBuilder.append(id).append(";");
-////                }
-////
-////                //remove the tail ";" character
-////                trajBuilder.setLength(trajBuilder.length()-1);
-////                writer.write(trajBuilder.toString());
-////                writer.newLine();
-////
-////                trajBuilder.setLength(0);
-////            }
-//            for (Trajectory<TowerVertex> traj : mappedTrajectories) {
-//                trajBuilder.append(traj.id).append("\t");
-//
-//                for (TowerVertex vertex : traj) {
-//                    hash = GeoHash.encodeHash(vertex.lat, vertex.lng);
-//                    Integer id = graph.vertexIdLookup.get(hash);
-//
-//                    if (id == null) {
-//                        logger.error("a mapped edge is missing when processing trajectory id "+ traj.id);
-//                    }
-//                    else {
-//                        trajBuilder.append(id).append(",");
-//                    }
-//                }
-//
-//                //remove the tail ";" character
-//                trajBuilder.setLength(trajBuilder.length()-1);
-//                writer.write(trajBuilder.toString());
-//                writer.newLine();
-//
-//                trajBuilder.setLength(0);
-//            }
-//
-//            writer.flush();
-//
-//        }catch (IOException e){
-//            e.printStackTrace();
-//        }
-//
-//        //write edge id representation of trajectories.
-//        try(BufferedWriter writer = new BufferedWriter(new FileWriter(setting.TRAJECTORY_EDGE_REPRESENTATION_PATH, append))) {
-//
-//            StringBuilder trajBuilder = new StringBuilder();
-//            Iterator<TorEdge> iterator;
-//            TorEdge curEdge;
-//
-////            for (Trajectory<TowerVertex> traj : mappedTrajectories) {
-////
-////                trajBuilder.append(traj.id).append(";");
-////                iterator = traj.edges.iterator();
-////
-////                while(iterator.hasNext()) {
-////                    curEdge = iterator.next();
-////                    trajBuilder.append(curEdge.id).append(";");
-////                }
-////
-////                //remove the tail ";" character
-////                trajBuilder.setLength(trajBuilder.length()-1);
-////                writer.write(trajBuilder.toString());
-////                writer.newLine();
-////
-////                trajBuilder.setLength(0);
-////            }
-//
-//            for (Trajectory<TowerVertex> traj : mappedTrajectories) {
-//
-//                trajBuilder.append(traj.id).append("\t");
-//                iterator = traj.edges.iterator();
-//
-//                while(iterator.hasNext()) {
-//                    curEdge = iterator.next();
-//                    trajBuilder.append(curEdge.id).append(",");
-//                }
-//
-//                //remove the tail ";" character
-//                trajBuilder.setLength(trajBuilder.length()-1);
-//                writer.write(trajBuilder.toString());
-//                writer.newLine();
-//
-//                trajBuilder.setLength(0);
-//            }
-//
-//            writer.flush();
-//
-//        }catch (IOException e){
-//            e.printStackTrace();
-//        }
-
         append = true;
     }
 
     private void addTime() {
-
-        // load trajectory edge representation
-//        BufferedReader reader = new BufferedReader(new FileReader(setting.TRAJECTORY_EDGE_REPRESENTATION_PATH_PARTIAL));
-//        BufferedWriter writer = new BufferedWriter(new FileWriter(setting.TRAJECTORY_START_END_TIME_PARTIAL));
-//        String line;
-//        Map<String, Integer> map = new LinkedHashMap<>(); //trajectory id - number of edges
-//        while((line = reader.readLine())!= null){
-//            String[] tokens = line.split("\t");
-//            map.put(tokens[0], tokens[1].split(",").length);
-//        }
 
         //从trajectory edge partial中读取出数据
         String edgePartial = getFileNameWithoutExtension(setting.TRAJECTORY_EDGE_REPRESENTATION_PATH_PARTIAL);
@@ -478,17 +321,12 @@ public class TorSaver {
                     .addExpressions(new LongValue(""+entry.getKey()))
                     .addExpressions(new StringValue(sdf.format(d1)))
                     .addExpressions(new StringValue(sdf.format(d2)));
-//            String ret = entry.getKey() + Torch.SEPARATOR_2 + sdf.format(d1)+separator+sdf.format(d2);
-//            writer.write(ret);
-//            writer.newLine();
             RowConstructor rowConstructor = new RowConstructor().withExprList(expressionList);
             expressions.add(rowConstructor);
         }
         ValuesStatement valuesStatement = new ValuesStatement().withExpressions(new ExpressionList().withExpressions(expressions));
         trajectoryTimePartialInsert(valuesStatement);
-//        writer.flush();
-//        writer.close();
-        //range
+
     }
 
     //todo 这里改vertex和edge的partial
@@ -543,35 +381,6 @@ public class TorSaver {
         //执行query
         Transaction.getInstance().query(createVertexPartial.toString());
 
-//        List<String> edgeList = new ArrayList<>(200001);
-//        List<String> vertexList = new ArrayList<>(200001);
-//        String line1, line2;
-//        int i = 0;
-//        while((line1 = edgeReader.readLine()) != null){
-//            edgeList.add(line1);
-//            line2 = vertexReader.readLine();
-//            vertexList.add(line2);
-//            if (++i % 100000 == 0){
-//                break;
-//            }
-//        }
-////        BufferedWriter writer = new BufferedWriter(new FileWriter(setting.TRAJECTORY_VERTEX_REPRESENTATION_PATH+"_partial.txt"));
-//        BufferedWriter writer = new BufferedWriter(new FileWriter(setting.TRAJECTORY_VERTEX_REPRESENTATION_PATH_PARTIAL));
-//        for (String line : vertexList){
-//            writer.write(line);
-//            writer.newLine();
-//        }
-//        writer.flush();
-//        writer.close();
-//
-////        writer = new BufferedWriter(new FileWriter(setting.TRAJECTORY_EDGE_REPRESENTATION_PATH+"_partial.txt"));
-//        writer = new BufferedWriter(new FileWriter(setting.TRAJECTORY_EDGE_REPRESENTATION_PATH_PARTIAL));
-//        for (String line:edgeList){
-//            writer.write(line);
-//            writer.newLine();
-//        }
-//        writer.flush();
-//        writer.close();
     }
 
     private void idVertexCreate() {

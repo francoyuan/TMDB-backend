@@ -9,8 +9,17 @@ import au.edu.rmit.bdm.Torch.base.model.TrajEntry;
 import au.edu.rmit.bdm.Torch.mapMatching.model.TowerVertex;
 import au.edu.rmit.bdm.Torch.queryEngine.model.Circle;
 import au.edu.rmit.bdm.Torch.queryEngine.model.SearchWindow;
+import com.google.common.hash.Funnels;
+import edu.whu.tmdb.query.utils.KryoSerialization;
+import edu.whu.tmdb.query.utils.MemConnect;
+import edu.whu.tmdb.storage.memory.MemManager;
+import edu.whu.tmdb.storage.utils.K;
+import edu.whu.tmdb.storage.utils.V;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.common.hash.BloomFilter;
+import com.google.common.hash.Funnel;
+import scala.collection.generic.BitOperations;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -62,11 +71,22 @@ public class VertexGridIndex extends HashMap<Integer, Collection<Integer>> imple
     //todo
     @Override
     public boolean build(String path) {
-        
-        logger.info("build spatial vertexGridIndex");
-        //if (load(path)) return true;
-        
-        _build();
+        File file = new File(path);
+        String parentFile = file.getParentFile().toString();
+        File file1 = new File(parentFile + "/" + INDEX_FILE_POINT);
+        if (file1.exists()) {
+            load(parentFile);
+        }else {
+            logger.info("build spatial vertexGridIndex");
+            //if (load(path)) return true;
+//            this.tileLen=this.tileLen*10;
+            _build();
+//            saveGridCardStat(parentFile);
+//            this.clear();
+//            this.tileLen=this.tileLen/10;
+//            _build();
+            save(parentFile);
+        }
         loaded = true;
         //saveUncompressed();
         logger.info("grid index build complete");
@@ -74,7 +94,6 @@ public class VertexGridIndex extends HashMap<Integer, Collection<Integer>> imple
     }
     
     private void _build(){
-
         // find bounding box for all points
         lowerLat = Float.MAX_VALUE;
         leftLng = Float.MAX_VALUE;
@@ -175,12 +194,12 @@ public class VertexGridIndex extends HashMap<Integer, Collection<Integer>> imple
      * @return
      */
     private boolean load(String path) {
-        File file = new File(INDEX_FILE_POINT);
+        File file = new File(path+"/"+INDEX_FILE_POINT);
         String line = null, pointLine = null;
         if (size() == 0 && file.exists()) {
 
-            try (BufferedReader idReader = new BufferedReader(new FileReader(INDEX_FILE_GRID_ID));
-                 BufferedReader pointReader = new BufferedReader(new FileReader(INDEX_FILE_POINT))) {
+            try (BufferedReader idReader = new BufferedReader(new FileReader(path+"/"+INDEX_FILE_GRID_ID));
+                 BufferedReader pointReader = new BufferedReader(new FileReader(path+"/"+INDEX_FILE_POINT))) {
                 line = idReader.readLine();
                 String[] trajLineArray = line.split(Torch.SEPARATOR_1);
                 this.lowerLat = Float.parseFloat(trajLineArray[0]);
@@ -219,15 +238,13 @@ public class VertexGridIndex extends HashMap<Integer, Collection<Integer>> imple
         return false;
     }
 
-    private void save() {
-
-        File file = new File(INDEX_FILE_POINT);
+    private void save(String parentPath) {
+        File file = new File(parentPath+"/"+INDEX_FILE_POINT);
         if (!file.exists()) {
             file.getParentFile().mkdirs();
         }
-        
-        try (BufferedWriter idWriter = new BufferedWriter((new OutputStreamWriter(new FileOutputStream(INDEX_FILE_GRID_ID, false), StandardCharsets.UTF_8)));
-             BufferedWriter pointWriter = new BufferedWriter((new OutputStreamWriter(new FileOutputStream(INDEX_FILE_POINT, false), StandardCharsets.UTF_8)))) {
+        try (BufferedWriter idWriter = new BufferedWriter((new OutputStreamWriter(new FileOutputStream(parentPath+"/"+INDEX_FILE_GRID_ID, false), StandardCharsets.UTF_8)));
+             BufferedWriter pointWriter = new BufferedWriter((new OutputStreamWriter(new FileOutputStream(parentPath+"/"+INDEX_FILE_POINT, false), StandardCharsets.UTF_8)))) {
             //first write some arguments
             idWriter.write(this.lowerLat + Torch.SEPARATOR_1);
             idWriter.write(this.leftLng + Torch.SEPARATOR_1);
@@ -239,7 +256,6 @@ public class VertexGridIndex extends HashMap<Integer, Collection<Integer>> imple
             idWriter.write(this.verticalTileNumber + Torch.SEPARATOR_1);
             idWriter.write(this.tileLen + Torch.SEPARATOR_1);
             idWriter.newLine();
-
             PriorityQueue<Integer> gridPriorityQueue = new PriorityQueue<>(Comparator.naturalOrder());
             for (Entry<Integer, Collection<Integer>> gridEntry : entrySet()) {
                 Collection<Integer> pointIDSet = gridEntry.getValue();
@@ -253,9 +269,9 @@ public class VertexGridIndex extends HashMap<Integer, Collection<Integer>> imple
                     while (!gridPriorityQueue.isEmpty()) {
                         int pointID = gridPriorityQueue.poll();
                         if (firstLinePoint)
-                            firstLinePoint = false;
+                        firstLinePoint = false;
                         else
-                            pointWriter.write(SEPRATOR);
+                        pointWriter.write(SEPRATOR);
                         pointWriter.write(pointID + "");
                     }
                     pointWriter.newLine();
@@ -264,6 +280,24 @@ public class VertexGridIndex extends HashMap<Integer, Collection<Integer>> imple
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void saveGridCardStat(String path) {
+        HashMap<Integer,Integer> card=new HashMap<>();
+        for (Integer id:this.keySet()){
+            card.put(id, get(id).size());
+        }
+        String s = KryoSerialization.serializeToString(card);
+        String[] split = path.split("/");
+        String base=split[split.length-2];
+        String key=base+"/gridCard";
+        MemManager.getInstance().memTable.put(new K(key),new V(s));
+        MemManager.getInstance().saveAll();
+        logger.info("stored grid cardinality info, the key is "+key);
+        logger.info("stored grid cardinality info, the path is "+path);
+        V search = MemManager.getInstance().search(new K(base + "/gridCard"));
+        HashMap<Integer,Integer> o = (HashMap<Integer, Integer>) KryoSerialization.deserializeFromString(search.valueString);
+        Integer count = o.get(100);
     }
 
     Collection<Integer> pointsInWindow(SearchWindow window) {

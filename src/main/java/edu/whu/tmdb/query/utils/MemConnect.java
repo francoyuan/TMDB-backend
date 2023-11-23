@@ -111,6 +111,14 @@ public class MemConnect {
         }
     }
 
+    public void put(K key, V value){
+        mem.memTable.put(key,value);
+    }
+
+    public V get(K key){
+        return mem.memTable.get(key);
+    }
+
 //   获取表在classTable中的id值
     public int getClassId(String fromItem) throws TMDBException {
         for (ClassTableItem item : classt.classTable) {

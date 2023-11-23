@@ -213,7 +213,7 @@ public class SelectImpl implements edu.whu.tmdb.query.excecute.Select {
             for (Tuple t:
                  tuples) {
                 if(t.tuple[pIndex]!=null) {
-                    temp.add(Double.parseDouble((String) t.tuple[pIndex]));
+                    temp.add(Double.parseDouble(String.valueOf(t.tuple[pIndex])));
                 }
             }
             double d=solveList(funcName,temp);

@@ -1,5 +1,7 @@
 package edu.whu.tmdb.storage.utils;
 
+import edu.whu.tmdb.Log.Constants;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -7,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.util.Properties;
 
 // 定义一些常量和静态方法
 public class Constant {
@@ -17,11 +20,13 @@ public class Constant {
     // memTable最大大小为4MB=4*1024*1024B，超过就会触发compact到外存
     public static final long MAX_MEM_SIZE = 4L * 1024 * 1024;
 
+    public static String ROOT="";
+
     // LSM-Tree文件目录
-    public static final String DATABASE_DIR = "data/level/";
+    public static String DATABASE_DIR = "data/level/";
 
     // 系统表文件目录
-    public static final String SYSTEM_TABLE_DIR = "data/sys/";
+    public static String SYSTEM_TABLE_DIR = "data/sys/";
 
     // 最大level数
     public static final int MAX_LEVEL = 6;
@@ -41,7 +46,6 @@ public class Constant {
     public static final long MAX_LEVEL5_SIZE = 100000L * 1024 * 1024;
     public static final long MAX_LEVEL6_SIZE = 1000000L * 1024 * 1024;
     public static final long[] MAX_LEVEL_SIZE = {MAX_LEVEL0_SIZE, MAX_LEVEL1_SIZE, MAX_LEVEL2_SIZE, MAX_LEVEL3_SIZE, MAX_LEVEL4_SIZE, MAX_LEVEL5_SIZE, MAX_LEVEL6_SIZE};
-
 
     // 编码int为byte
     public static byte[] INT_TO_BYTES(int value){

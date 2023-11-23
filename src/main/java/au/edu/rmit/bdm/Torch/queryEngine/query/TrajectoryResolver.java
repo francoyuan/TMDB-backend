@@ -4,6 +4,7 @@ import au.edu.rmit.bdm.Torch.base.FileSetting;
 import au.edu.rmit.bdm.Torch.base.Torch;
 import au.edu.rmit.bdm.Torch.base.db.TrajEdgeRepresentationPool;
 import au.edu.rmit.bdm.Torch.base.db.TrajVertexRepresentationPool;
+import au.edu.rmit.bdm.Torch.base.db.TrajectoryPool;
 import au.edu.rmit.bdm.Torch.base.helper.GeoUtil;
 import au.edu.rmit.bdm.Torch.base.model.Coordinate;
 import au.edu.rmit.bdm.Torch.base.model.TrajEntry;
@@ -48,7 +49,26 @@ public class TrajectoryResolver {
         this.resolveAll = resolveAll;
     }
 
-    TrajectoryResolver(boolean resolveAll, boolean isNantong, FileSetting setting)  {
+    public TrajectoryResolver(boolean resolveAll, boolean isNantong, FileSetting setting,boolean isMem)  {
+        this.resolveAll = resolveAll;
+        this.setting = setting;
+        this.isNantong = isNantong;
+
+        if (!isNantong) {
+            trajectoryPool = new TrajEdgeRepresentationPool(isMem, setting);
+            rawEdgeLookup = new HashMap<>();
+            timeSpanLookup = new HashMap<>();
+            loadRawEdgeLookupTable();
+            loadTimeSpanLookupTable();
+        }else{
+            vertexLookup = new HashMap<>();
+            trajVertexRepresentationPool = new TrajVertexRepresentationPool(isMem, setting);
+            loadVertexLookup();
+        }
+
+    }
+
+    public TrajectoryResolver(boolean resolveAll, boolean isNantong, FileSetting setting)  {
         this.resolveAll = resolveAll;
         this.setting = setting;
         this.isNantong = isNantong;
@@ -267,26 +287,6 @@ public class TrajectoryResolver {
 
             rawEdgeLookup.put(id, new String[]{lats, lngs});
         }
-
-//        try(FileReader fr = new FileReader(setting.ID_EDGE_RAW);
-//            BufferedReader reader = new BufferedReader(fr)){
-//            String line;
-//            String[] tokens;
-//            int id;
-//            String lats;
-//            String lngs;
-//            while((line = reader.readLine())!=null){
-//                tokens = line.split(";");
-//                id = Integer.parseInt(tokens[0]);
-//                lats = tokens[1];
-//                lngs = tokens[2];
-//
-//                rawEdgeLookup.put(id, new String[]{lats, lngs});
-//            }
-//
-//        }catch (IOException e){
-//            throw new RuntimeException("some critical data is missing, system on exit...");
-//        }
     }
 
     //todo 这里改time partial的信息
@@ -309,28 +309,6 @@ public class TrajectoryResolver {
                     (String) tuple.tuple[3]));
         }
 
-//        try(FileReader fr = new FileReader(setting.TRAJECTORY_START_END_TIME_PARTIAL);
-//            BufferedReader reader = new BufferedReader(fr)){
-//            String line;
-//            String[] tokens;
-//            String id;
-//            String[] span;
-//            String start;
-//            String end;
-//            while((line = reader.readLine())!=null){
-//                tokens = line.split(Torch.SEPARATOR_2);
-//                id= tokens[0];
-//                span = tokens[1].split(" \\| ");
-//                start = span[0];
-//                end = span[1];
-//
-//                timeSpanLookup.put(id, buildInterval(id, start, end));
-//            }
-//
-//        }catch (IOException e){
-//            throw new RuntimeException("some critical data is missing, system on exit...");
-//        }
-
     }
 
     private TimeInterval buildInterval(String id, String start, String end) {
@@ -342,5 +320,13 @@ public class TrajectoryResolver {
     public void setTimeInterval(TimeInterval span, boolean contain) {
         this.querySpan = span;
         this.contain = contain;
+    }
+
+    public TrajectoryPool getTrajectoryPool() {
+        return trajectoryPool;
+    }
+
+    public void setTrajectoryPool(TrajEdgeRepresentationPool trajectoryPool) {
+        this.trajectoryPool = trajectoryPool;
     }
 }

@@ -170,7 +170,6 @@ public class PrecomputedHiddenMarkovModel implements Mapper {
             timeSteps.add(timeStep);
         }
 
-
         //vertibi algorithm
         List<Candidate> preCandidates = timeSteps.get(0);
         for (Candidate preCandidate : preCandidates) {

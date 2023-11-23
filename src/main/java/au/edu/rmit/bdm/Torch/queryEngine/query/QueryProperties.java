@@ -13,7 +13,8 @@ public class QueryProperties {
     public QueryProperties(){
         init();
     }
-    
+
+    public boolean isMem;
     public String similarityMeasure;
     public String preferedIndex;
     public boolean useRaw;
@@ -30,6 +31,7 @@ public class QueryProperties {
         this.resolveAll = properties.resolveAll;
         this.baseDir = properties.baseDir;
         this.uriPrefix = properties.uriPrefix;
+        this.isMem=properties.isMem;
         isNantong = properties.isNantong;
 
         // if user does not specify what kind of query.txt will be used,

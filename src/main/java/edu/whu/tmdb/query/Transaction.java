@@ -2,8 +2,10 @@ package edu.whu.tmdb.query;
 
 
 
+import edu.whu.tmdb.Log.Constants;
 import edu.whu.tmdb.query.excecute.impl.*;
 import edu.whu.tmdb.query.torch.TorchConnect;
+import edu.whu.tmdb.storage.utils.Constant;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
@@ -12,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Properties;
 
 import edu.whu.tmdb.Log.LogManager;
 import edu.whu.tmdb.query.excecute.Create;
@@ -74,6 +77,13 @@ public class Transaction {
         this.levelManager = MemManager.levelManager;
         this.memConnect=MemConnect.getInstance(mem);
 
+    }
+
+    public static void initializeWithConfig(Properties properties){
+        Constant.ROOT =properties.getProperty("root");
+        Constant.DATABASE_DIR=Constant.ROOT+"/level/";
+        Constant.SYSTEM_TABLE_DIR=Constant.ROOT+"/sys/";
+        Constants.LOG_BASE_DIR=Constant.ROOT+"/log/";
     }
 
 

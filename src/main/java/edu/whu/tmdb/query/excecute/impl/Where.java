@@ -31,6 +31,7 @@ import edu.whu.tmdb.storage.memory.Tuple;
 import edu.whu.tmdb.storage.memory.TupleList;
 import org.apache.commons.math3.analysis.function.Exp;
 import org.checkerframework.checker.units.qual.A;
+import org.checkerframework.checker.units.qual.Length;
 
 import static org.apache.commons.math3.distribution.fitting.MultivariateNormalMixtureExpectationMaximization.estimate;
 
@@ -173,15 +174,23 @@ public class  Where {
             trajEntries.add(coordinate);
         }
         int k=Integer.parseInt(expressions.get(1).toString());
+        List<Trajectory<TrajEntry>> trajectories=new ArrayList<>();
+        // two parameter without the similarity function
         if(expressions.size()==2) {
-            List<Trajectory<TrajEntry>> trajectories = TorchConnect.getTorchConnect().topkQuery(trajEntries, k);
-            return TrajTrans.getSelectResultByTrajList(trajectories, selectResult);
+            trajectories = TorchConnect.getTorchConnect().topkQuery(trajEntries, k);
         }
+        //three parameter contains the similarity function
         else{
             String similarityFunction=((StringValue)expressions.get(2)).getValue();
-            List<Trajectory<TrajEntry>> trajectories = TorchConnect.getTorchConnect().topkQuery(trajEntries, k,similarityFunction);
-            return TrajTrans.getSelectResultByTrajList(trajectories,selectResult);
+            trajectories = TorchConnect.getTorchConnect().topkQuery(trajEntries, k,similarityFunction);
         }
+        ArrayList<String> trajIds=new ArrayList<>();
+        for (Trajectory t :
+               trajectories ) {
+            trajIds.add(t.id);
+        }
+        TorchConnect.getTorchConnect().updateTrajMap(trajIds);
+        return TrajTrans.getSelectResultByTrajList(trajectories,selectResult);
     }
 
     private SelectResult strictPath(Function expression, SelectResult selectResult) {
