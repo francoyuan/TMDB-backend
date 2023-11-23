@@ -23,6 +23,7 @@ public class MMProperties {
         preComputationRange = p.preComputationRange;
         baseDir = p.baseDir;
     }
+
     public void reset() {
         vehicleType = Torch.vehicleType.CAR;
         mmAlg = Torch.Algorithms.HMM_PRECOMPUTED;

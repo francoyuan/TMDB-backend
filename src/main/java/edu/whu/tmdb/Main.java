@@ -9,18 +9,25 @@ package edu.whu.tmdb;/*
 
 import edu.whu.tmdb.query.Transaction;
 import edu.whu.tmdb.query.torch.TorchConnect;
+import edu.whu.tmdb.query.utils.KryoSerialization;
 import edu.whu.tmdb.query.utils.SelectResult;
+import edu.whu.tmdb.storage.memory.MemManager;
+import edu.whu.tmdb.storage.utils.K;
+import edu.whu.tmdb.storage.utils.V;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.lang.management.MemoryManagerMXBean;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 public class Main {
@@ -32,6 +39,20 @@ public class Main {
         testRangeQueryRadius("Porto");
 //        testRangeQuerySquare("Porto");
 //        testMapMatching();
+//        test();
+    }
+
+    public static void test(){
+        String ks="Porto/gridCard";
+        V search = MemManager.getInstance().search(new K(ks));
+        HashMap<Integer,Integer> gridCard = (HashMap<Integer, Integer>) KryoSerialization.deserializeFromString(search.valueString);
+        System.out.println(gridCard.size());
+//        HashMap<Integer,Integer> o = (HashMap<Integer, Integer>) KryoSerialization.deserializeFromString(s);
+//        System.out.println(o.toString());
+//        execute("CREATE CLASS t (name char,age int, salary int);");
+//        execute("insert into t values ('aa',1,1),('aa',2,1),('bb',1,1);");
+////        Transaction.getInstance().SaveAll();
+//        execute("select name,Max(age) from t group by name");
     }
 
     public static void testMapMatching() throws IOException {

@@ -71,7 +71,6 @@ public class LEVI implements WindowQueryIndex, TopKQueryIndex {
     //todo
     @Override
     public List<String> findInRange(Geometry geometry) {
-
         Collection<Integer> points;
         if (geometry instanceof SearchWindow)
             points = gridIndex.pointsInWindow((SearchWindow) geometry);

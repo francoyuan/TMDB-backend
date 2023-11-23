@@ -25,6 +25,13 @@ public class Engine {
         pool = new QueryPool(props);
     }
 
+    public QueryPool getPool() {
+        return pool;
+    }
+
+    public void setPool(QueryPool pool) {
+        this.pool = pool;
+    }
 
     /**
      * API for finding top-k most similar trajectories with the given query.<p>

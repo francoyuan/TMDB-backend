@@ -25,8 +25,7 @@ public abstract class TrajectoryPool {
     private Logger logger = LoggerFactory.getLogger(TrajVertexRepresentationPool.class);
     private boolean isMem;
     private Map<String, String[]> memPool;
-//    private DBManager2 db;
-//    private DBManager db;
+
     String tableName;
 
     FileSetting setting;
@@ -63,23 +62,7 @@ public abstract class TrajectoryPool {
             memPool.put((String)tuple.tuple[0]
                     , ((String)tuple.tuple[1]).split(","));
         }
-//        try (FileReader fr = new FileReader(filePath);
-//             BufferedReader reader = new BufferedReader(fr)) {
-//
-//            String line;
-//            String[] tokens;
-//            String trajId;
-//
-//            while ((line = reader.readLine()) != null) {
-//                tokens = line.split("\t");
-//                trajId = tokens[0];
-//                memPool.put(trajId, tokens[1].split(","));
-//            }
-//
-//        } catch (IOException e) {
-//            logger.error("some critical data is missing, system on exit...");
-//            System.exit(-1);
-//        }
+
     }
 
     public int[] get(String trajId)  {
@@ -92,16 +75,6 @@ public abstract class TrajectoryPool {
             for (int i = 0; i < ret.length; i++)
                 ret[i] = Integer.valueOf(trajectory[i]);
         }else{
-//            PlainSelect plainSelect = new PlainSelect().withFromItem(new Table(table));
-//            plainSelect.addSelectItems(new AllColumns());
-//            EqualsTo where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(setting.TorchBase));
-//            plainSelect.setWhere(where);
-//            SelectResult result = Transaction.getInstance().query(new Select().withSelectBody(plainSelect));
-//            for (Tuple tuple :
-//                    result.getTpl().tuplelist) {
-//                memPool.put((String)tuple.tuple[0]
-//                        , ((String)tuple.tuple[1]).split(","));
-//            }
             String sql="select edges from "+getFileNameWithoutExtension(setting.TRAJECTORY_EDGE_REPRESENTATION_PATH_PARTIAL)
                     +" where id="+trajId
                     +" and traj_name='"+getFileNameWithoutExtension(setting.TorchBase)+"';";
@@ -117,5 +90,13 @@ public abstract class TrajectoryPool {
                 ret[i] = Integer.valueOf(temp[i]);
         }
         return ret;
+    }
+
+    public Map<String, String[]> getMemPool() {
+        return memPool;
+    }
+
+    public void setMemPool(Map<String, String[]> memPool) {
+        this.memPool = memPool;
     }
 }

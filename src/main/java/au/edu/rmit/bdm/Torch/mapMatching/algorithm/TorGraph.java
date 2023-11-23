@@ -205,29 +205,6 @@ public class TorGraph {
             idVertexLookup.put(id, temp);
         }
 
-//        try(FileReader fr = new FileReader(setting.ID_VERTEX_LOOKUP);
-//            BufferedReader reader = new BufferedReader(fr)) {
-//
-//            String line;
-//            String[] tokens;
-//            Integer id;
-//            Double lat;
-//            Double lng;
-//            while((line = reader.readLine()) != null){
-//                tokens = line.split(";");
-//                id = Integer.parseInt(tokens[0]);
-//                lat = Double.parseDouble(tokens[1]);
-//                lng = Double.parseDouble(tokens[2]);
-//
-//                TowerVertex temp = new TowerVertex(lat, lng, id);
-//                towerVertexes.put(temp.hash, temp);
-//                idVertexLookup.put(id, temp);
-//            }
-//
-//        }catch (IOException e){
-//            throw new IllegalStateException("id vertex lookup table is missing!");
-//        }
-
         //todo id_edge表读的读取在这里改
         //read id edge lookup table
         String id_edge = getFileNameWithoutExtension(setting.ID_EDGE_LOOKUP);
@@ -247,35 +224,6 @@ public class TorGraph {
             allEdges.put(t1.hash+ t2.hash, new TorEdge(edgeId, t1, t2, len));
         }
 
-
-//        try(FileReader fr = new FileReader(setting.ID_EDGE_LOOKUP);
-//            BufferedReader reader = new BufferedReader(fr)){
-//
-//            String line;
-//            String[] tokens;
-//            Integer edgeId;
-//            Integer vertexId1;
-//            Integer vertexId2;
-//            double len;
-//            TowerVertex t1, t2;
-//
-//
-//            while((line = reader.readLine()) != null && line.length() != 0){
-//                try {
-//                    tokens = line.split(";");
-//                    edgeId = Integer.parseInt(tokens[0]);
-//                    vertexId1 = Integer.parseInt(tokens[1]);
-//                    vertexId2 = Integer.parseInt(tokens[2]);
-//                    len = Double.parseDouble(tokens[3]);
-//                    t1 = idVertexLookup.get(vertexId1);
-//                    t2 = idVertexLookup.get(vertexId2);
-//                    allEdges.put(t1.hash+ t2.hash, new TorEdge(edgeId, t1, t2, len));
-//                }catch (Exception e){}
-//            }
-//
-//        }catch (IOException e){
-//            throw new IllegalStateException("id edge lookup table is missing!");
-//        }
 
         isBuilt = true;
         return this;
@@ -297,10 +245,8 @@ public class TorGraph {
             towerVertexes.put(vertex.hash, vertex);
             allPoints.put(vertex.hash, vertex);
         }
-
         MemoryUsage.printCurrentMemUsage("[after loadding all vertices]");
         AllEdgesIterator allEdgeIterator = graph.getAllEdges();
-
         // model all edges; two issues are taken into consideration:
         // - since there are a few graph-hopper edges that contains tower points in the middle
         //   (taking beijing.osm as example, there are 54406 tower nodes, while 11 tower nodes in the middle of an edge)

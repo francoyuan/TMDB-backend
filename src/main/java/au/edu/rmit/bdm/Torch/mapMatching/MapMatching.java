@@ -3,19 +3,25 @@ package au.edu.rmit.bdm.Torch.mapMatching;
 import au.edu.rmit.bdm.Torch.base.FileSetting;
 import au.edu.rmit.bdm.Torch.base.Torch;
 import au.edu.rmit.bdm.Torch.base.helper.MemoryUsage;
+import au.edu.rmit.bdm.Torch.base.invertedIndex.VertexInvertedIndex;
 import au.edu.rmit.bdm.Torch.base.model.TrajEntry;
 import au.edu.rmit.bdm.Torch.base.model.Trajectory;
+import au.edu.rmit.bdm.Torch.base.spatialIndex.VertexGridIndex;
 import au.edu.rmit.bdm.Torch.mapMatching.algorithm.Mapper;
 import au.edu.rmit.bdm.Torch.mapMatching.algorithm.Mappers;
 import au.edu.rmit.bdm.Torch.mapMatching.algorithm.TorDijkstra;
 import au.edu.rmit.bdm.Torch.mapMatching.algorithm.TorGraph;
 import au.edu.rmit.bdm.Torch.mapMatching.model.TowerVertex;
+import com.graphhopper.storage.Graph;
+import com.graphhopper.storage.NodeAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * An mapMatching object is for projecting raw trajectory data to graph.
@@ -93,10 +99,9 @@ public class MapMatching {
             graph = TorGraph.newInstance(GRAPHNAME, setting).
                     initGH(setting.hopperURI, props.osmPath, props.vehicleType);
             MemoryUsage.printCurrentMemUsage("[after init graph hopper]");
-            graph.build(props);
+            graph.build(props);;
             MemoryUsage.printCurrentMemUsage("[after build tor graph]");
         }
-
         TorSaver saver = new TorSaver(graph, setting);
         TrajReader reader = new TrajReader(props);
         mapper = Mappers.getMapper(props.mmAlg, graph);
@@ -117,6 +122,20 @@ public class MapMatching {
         //do map-matching for the rest
         List<Trajectory<TowerVertex>> mappedTrajectories = mapper.batchMatch(rawTrajs);
         saver.Save(mappedTrajectories, rawTrajs, true);
+        getIdVertexLookUp();
+        VertexGridIndex vertexGridIndex = new VertexGridIndex(graph.idVertexLookup, 100);
+        vertexGridIndex.build(setting.GRID_INDEX);
+    }
+
+    private void getIdVertexLookUp(){
+        Graph hopperGraph = graph.getGH().getGraphHopperStorage().getBaseGraph();
+        int numNodes = hopperGraph.getNodes();
+        NodeAccess nodeAccess = hopperGraph.getNodeAccess();
+        Map<Integer, TowerVertex> allPointMap=new HashMap<>();
+        for (int i = 0; i < numNodes; i++) {
+            allPointMap.put(i,new TowerVertex(nodeAccess.getLat(i),nodeAccess.getLon(i),i));
+        }
+        graph.idVertexLookup=allPointMap;
     }
 
 

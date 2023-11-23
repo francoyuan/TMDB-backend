@@ -179,6 +179,14 @@ public class QueryPool extends HashMap<String, Query> {
             LEVI.updateEpsilon(Integer.valueOf(props.get("epsilon")));
     }
 
+    public TrajectoryResolver getResolver() {
+        return resolver;
+    }
+
+    public void setResolver(TrajectoryResolver resolver) {
+        this.resolver = resolver;
+    }
+
     public void setTimeInterval(TimeInterval span, boolean contain){
         resolver.setTimeInterval(span, contain);
     }
