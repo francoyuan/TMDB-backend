@@ -84,6 +84,7 @@ public class Transaction {
         Constant.DATABASE_DIR=Constant.ROOT+"/level/";
         Constant.SYSTEM_TABLE_DIR=Constant.ROOT+"/sys/";
         Constants.LOG_BASE_DIR=Constant.ROOT+"/log/";
+        edu.whu.tmdb.query.utils.Constants.TORCH_RES_BASE_DIR=Constant.ROOT+"/res";
     }
 
 
