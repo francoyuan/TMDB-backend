@@ -2,6 +2,7 @@ package edu.whu.tmdb.storage.memory;
 
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class Tuple implements Serializable {
@@ -49,5 +50,10 @@ public class Tuple implements Serializable {
             result = 31 * result + Objects.hash(this.tuple[i]);
         }
         return result;
+    }
+
+    @Override
+    public String toString(){
+        return Arrays.toString(tuple);
     }
 }
