@@ -68,9 +68,9 @@ public class FileSetting {
         RAW_TRAJECTORY_INDEX = TorchBase + "/raw_trajectories";
         GRID_INDEX = TorchBase + "/grid_vertex.idx";RTREE_INDEX = TorchBase + "/rtree_raw.idx";
 
-        if(Constant.ROOT.equals("")) {
-            update(Constant.ROOT);
-        }
+//        if(Constant.ROOT.equals("")) {
+//            update(Constant.ROOT);
+//        }
         modifyForWinOS();
     }
 

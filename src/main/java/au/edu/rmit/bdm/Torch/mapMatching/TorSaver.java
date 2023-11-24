@@ -136,7 +136,7 @@ public class TorSaver {
         {
             writer.write(graph.vehicleType);
             writer.newLine();
-            writer.write(graph.OSMPath);
+            writer.write("/res/raw/Porto.osm.pbf");
             writer.flush();
         } catch (IOException e) {
             e.printStackTrace();

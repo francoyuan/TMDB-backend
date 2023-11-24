@@ -16,6 +16,8 @@ import au.edu.rmit.bdm.Torch.mapMatching.algorithm.TorGraph;
 import au.edu.rmit.bdm.Torch.mapMatching.model.TowerVertex;
 import au.edu.rmit.bdm.Torch.queryEngine.model.TimeInterval;
 import au.edu.rmit.bdm.Torch.queryEngine.similarity.SimilarityFunction;
+import edu.whu.tmdb.query.utils.Constants;
+import edu.whu.tmdb.storage.utils.Constant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,7 +86,7 @@ public class QueryPool extends HashMap<String, Query> {
         try (FileReader fr = new FileReader(setting.metaURI);
              BufferedReader reader = new BufferedReader(fr)) {
             vehicleType = reader.readLine();
-            osmPath = reader.readLine();
+            osmPath = Constant.ROOT+reader.readLine();
 
         } catch (IOException e) {
             logger.error("some critical data is missing, system on exit...");
