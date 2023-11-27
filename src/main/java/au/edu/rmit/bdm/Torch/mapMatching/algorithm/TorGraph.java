@@ -15,10 +15,13 @@ import com.github.davidmoten.rtree.RTree;
 import com.github.davidmoten.rtree.geometry.Geometries;
 import com.github.davidmoten.rtree.geometry.Geometry;
 import com.graphhopper.GraphHopper;
+import com.graphhopper.config.Profile;
 import com.graphhopper.reader.osm.GraphHopperOSM;
 import com.graphhopper.routing.util.*;
+import com.graphhopper.storage.BaseGraph;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.NodeAccess;
+import com.graphhopper.util.FetchMode;
 import com.graphhopper.util.PointList;
 
 import edu.whu.tmdb.query.Transaction;
@@ -63,7 +66,7 @@ public class TorGraph {
     public boolean isBuilt = false;
 
     public boolean isSaved =false;
-    public FlagEncoder vehicle;
+    public String vehicle;
     private FileSetting setting;
 
     final Map<String, TorVertex> allPoints;
@@ -135,15 +138,17 @@ public class TorGraph {
             logger.error("Torch currently do not support re-initialize graph-hopper in the application lifeCycle");
             return this;
         }
-
+        this.vehicle=vehicle;
         logger.info("from {}, reading graph data into memory", OSMPath);
         //build hopper
-        hopper = new GraphHopperOSM();
-        hopper.setDataReaderFile(OSMPath);
+
+        hopper = new GraphHopper();
+        hopper.setOSMFile(OSMPath);
         hopper.setGraphHopperLocation(hopperDataPath);
-        this.vehicle = getVehicle(vehicle);
-        hopper.setEncodingManager(new EncodingManager(this.vehicle));
-        hopper.getCHFactoryDecorator().setEnabled(false);
+        hopper.setVehiclesString(vehicle);
+
+        hopper.setProfiles(
+                new Profile(this.vehicle));
         hopper.importOrLoad();
         logger.info("have read graph data into memory");
 
@@ -214,7 +219,7 @@ public class TorGraph {
         plainSelect.setWhere(where);
         SelectResult id_edge_result = transaction.query(new Select().withSelectBody(plainSelect));
         for (Tuple tuple:
-            id_edge_result.getTpl().tuplelist) {
+                id_edge_result.getTpl().tuplelist) {
             int edgeId = ((Long)tuple.tuple[1]).intValue();
             int vertexId1 = ((Long)tuple.tuple[2]).intValue();
             int vertexId2 = ((Long)tuple.tuple[3]).intValue();
@@ -236,8 +241,9 @@ public class TorGraph {
 
         logger.info("building virtual graph.");
 
+
         //model all tower vertexes.
-        Graph graph = hopper.getGraphHopperStorage().getBaseGraph();
+        BaseGraph graph = hopper.getBaseGraph();
         NodeAccess nodeAccessor = graph.getNodeAccess();
         logger.info("total number of tower nodes in the graph {}", graph.getNodes());
         for (int i = 0; i < graph.getNodes(); ++i) {
@@ -252,12 +258,11 @@ public class TorGraph {
         //   (taking beijing.osm as example, there are 54406 tower nodes, while 11 tower nodes in the middle of an edge)
         //   when encounter it, we split it to make sure one edge has exactly two tower points.
         // - there could be more than one edge from one tower point to the other. we will have the shortest one
-        logger.info("total number of edges in the graph {}", allEdgeIterator.getMaxId());
-
+        logger.info("total number of edges in the graph {}", allEdgeIterator.length());
         while (allEdgeIterator.next()) {
 
             //fetch tower points as well as pillow points
-            PointList pointList = allEdgeIterator.fetchWayGeometry(3);
+            PointList pointList = allEdgeIterator.fetchWayGeometry(FetchMode.ALL);
             TowerVertex baseVertex = towerVertexes.get(GeoHash.encodeHash(pointList.getLat(0), pointList.getLon(0)));
             TorEdge edge = new TorEdge();
 
@@ -279,7 +284,7 @@ public class TorGraph {
                     edge.baseVertex = baseVertex;
                     edge.adjVertex = tVertex;
 
-                    if (allEdgeIterator.isForward(vehicle)) {
+                    if (allEdgeIterator.getBaseNode()==edge.baseVertex.getId()) {
                         TorEdge oldEdge = allEdges.get(TorEdge.getKey(baseVertex, tVertex));
                         if (oldEdge == null || oldEdge.getLength() > edge.getLength()) {
                             allEdges.put(TorEdge.getKey(baseVertex, tVertex), edge);
@@ -289,14 +294,14 @@ public class TorGraph {
 
                     }
 
-                    if (allEdgeIterator.isBackward(vehicle)) {
+                    if (allEdgeIterator.getBaseNode() == edge.adjVertex.getId()) {
                         TorEdge oldEdge = allEdges.get(TorEdge.getKey(tVertex, baseVertex));
                         if (oldEdge == null || oldEdge.getLength() > edge.getLength()) {
                             allEdges.put(TorEdge.getKey(baseVertex, tVertex), edge);
                             tVertex.addAdjPoint(baseVertex, edge.getLength());
                         }
                         edge.isForward = true;
-                        }
+                    }
 
                     if (i == size - 1) break;
 
@@ -363,27 +368,6 @@ public class TorGraph {
         logger.info("Exit - graph has been built. There are {} edges, {} points including {} tower points.", allEdges.size(), allPoints.size(), towerVertexes.size());
     }
 
-    private static FlagEncoder getVehicle(String vehicleType) {
-        FlagEncoder vehicle;
-        switch (vehicleType) {
-            case Torch.vehicleType.CAR:
-                vehicle = new CarFlagEncoder();
-                break;
-            case Torch.vehicleType.FOOT:
-                vehicle = new FootFlagEncoder();
-                break;
-            case Torch.vehicleType.BIKE:
-                vehicle = new BikeFlagEncoder();
-                break;
-            case Torch.vehicleType.MOTOCYCLE:
-                vehicle = new MotorcycleFlagEncoder();
-                break;
-            default:
-                throw new IllegalStateException("lookup Torch.vehicle for vehicle options");
-        }
-        return vehicle;
-    }
-
     private TorGraph initLookUpTable(){
         Map<String, TorEdge> edges = allEdges;
         Collection<TowerVertex> vertices = towerVertexes.values();
@@ -404,7 +388,7 @@ public class TorGraph {
     /**
      * Instantiate ShortestPathCache for precomputed map-matching algorithm.
      */
-     private void buildShortestPathCache(int precomputationRange) {
+    private void buildShortestPathCache(int precomputationRange) {
 
         this.preComputationRange = precomputationRange;
 

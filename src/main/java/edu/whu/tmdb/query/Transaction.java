@@ -34,7 +34,7 @@ import edu.whu.tmdb.storage.memory.TupleList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Transaction {
+public class Transaction implements Runnable{
 
     private static Logger logger = LoggerFactory.getLogger(Transaction.class);
     public MemManager mem;
@@ -252,7 +252,9 @@ public class Transaction {
     }
 
 
-
-
+    @Override
+    public void run() {
+        initEngine("Porto");
+    }
 }
 

@@ -13,9 +13,7 @@ import au.edu.rmit.bdm.Torch.queryEngine.Engine;
 import au.edu.rmit.bdm.Torch.queryEngine.query.QueryResult;
 import com.graphhopper.GraphHopper;
 import com.graphhopper.reader.osm.GraphHopperOSM;
-import com.graphhopper.routing.util.CarFlagEncoder;
 import com.graphhopper.routing.util.EncodingManager;
-import com.graphhopper.routing.util.FlagEncoder;
 
 import edu.whu.tmdb.query.Transaction;
 import edu.whu.tmdb.query.utils.SelectResult;
@@ -486,12 +484,12 @@ public class Test {
     }
 
     private static void initGH(){
-        GraphHopper hopper = new GraphHopperOSM();
-        hopper.setDataReaderFile("Resources/Porto.osm.pbf");
-        hopper.setGraphHopperLocation(setting.hopperURI);
-        FlagEncoder vehicle = new CarFlagEncoder();
-        hopper.setEncodingManager(new EncodingManager(vehicle));
-        hopper.getCHFactoryDecorator().setEnabled(false);
-        hopper.importOrLoad();
+//        GraphHopper hopper = new GraphHopperOSM();
+//        hopper.setDataReaderFile("Resources/Porto.osm.pbf");
+//        hopper.setGraphHopperLocation(setting.hopperURI);
+//        FlagEncoder vehicle = new CarFlagEncoder();
+//        hopper.setEncodingManager(new EncodingManager(vehicle));
+//        hopper.getCHFactoryDecorator().setEnabled(false);
+//        hopper.importOrLoad();
     }
 }

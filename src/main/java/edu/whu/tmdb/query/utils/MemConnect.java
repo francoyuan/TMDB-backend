@@ -73,7 +73,7 @@ public class MemConnect {
             else if (searchResult instanceof V)
 //                t= JSON.parseObject(((V) searchResult).valueString, Tuple.class);
                 t= (Tuple) KryoSerialization.deserializeFromString(((V) searchResult).valueString);
-        if (t.delete)
+        if (t==null || t.delete)
                 t= null;
             return t;
     }
