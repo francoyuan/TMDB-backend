@@ -146,7 +146,7 @@ public class TorSaver {
     private void saveIdVertexLookupTable()  {
 
 
-        Graph hopperGraph = graph.getGH().getGraphHopperStorage().getBaseGraph();
+        Graph hopperGraph = graph.getGH().getBaseGraph();
         int numNodes = hopperGraph.getNodes();
 
         NodeAccess nodeAccess = hopperGraph.getNodeAccess();
@@ -157,8 +157,8 @@ public class TorSaver {
             ExpressionList expressionList = new ExpressionList()
                     .addExpressions(new StringValue(getFileNameWithoutExtension(setting.TorchBase)))
                     .addExpressions(new LongValue(""+i))
-                    .addExpressions(new DoubleValue("" + nodeAccess.getLatitude(i)))
-                    .addExpressions(new DoubleValue("" + nodeAccess.getLongitude(i)));
+                    .addExpressions(new DoubleValue("" + nodeAccess.getLat(i)))
+                    .addExpressions(new DoubleValue("" + nodeAccess.getLon(i)));
             RowConstructor rowConstructor = new RowConstructor().withExprList(expressionList);
             expressions.add(rowConstructor);
         }

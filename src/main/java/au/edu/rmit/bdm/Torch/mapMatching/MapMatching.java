@@ -128,7 +128,7 @@ public class MapMatching {
     }
 
     private void getIdVertexLookUp(){
-        Graph hopperGraph = graph.getGH().getGraphHopperStorage().getBaseGraph();
+        Graph hopperGraph = graph.getGH().getBaseGraph();
         int numNodes = hopperGraph.getNodes();
         NodeAccess nodeAccess = hopperGraph.getNodeAccess();
         Map<Integer, TowerVertex> allPointMap=new HashMap<>();

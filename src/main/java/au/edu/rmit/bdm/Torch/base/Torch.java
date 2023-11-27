@@ -44,6 +44,8 @@ public interface Torch {
         String RangeQ = "RQ";
         String PathQ = "PQ";
         String TopK = "TK";
+
+        String ALL= "ALL";
     }
 
     /**

@@ -7,11 +7,14 @@ import com.github.davidmoten.geo.GeoHash;
 import com.graphhopper.matching.EdgeMatch;
 import com.graphhopper.matching.MapMatching;
 import com.graphhopper.matching.MatchResult;
+import com.graphhopper.matching.Observation;
 import com.graphhopper.routing.AlgorithmOptions;
+import com.graphhopper.storage.BaseGraph;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeIteratorState;
-import com.graphhopper.util.GPXEntry;
+import com.graphhopper.util.PMap;
+import com.graphhopper.util.shapes.GHPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,8 +40,8 @@ public class HiddenMarkovModel implements Mapper {
     private MapMatching hmm;
     private TorGraph torGraph;
 
-    HiddenMarkovModel(TorGraph torGraph, AlgorithmOptions options){
-        hmm = new MapMatching(torGraph.getGH(), options);
+    HiddenMarkovModel(TorGraph torGraph, PMap options){
+        hmm = MapMatching.fromGraphHopper(torGraph.getGH(), options);
         this.torGraph = torGraph;
     }
 
@@ -48,17 +51,17 @@ public class HiddenMarkovModel implements Mapper {
         logger.info("origin trajectory: {}", in);
 
         Trajectory<TowerVertex> mappedTrajectory = new Trajectory<>();
-        Graph hopperGraph = torGraph.getGH().getGraphHopperStorage();
+        BaseGraph hopperGraph = torGraph.getGH().getBaseGraph();
         Map<String, TowerVertex> towerVertexes =  torGraph.towerVertexes;
         Map<String,TorEdge> edges= torGraph.allEdges;
 
         mappedTrajectory.hasTime = in.hasTime;
         mappedTrajectory.id = in.id;
 
-        List<GPXEntry> queryTrajectory = new ArrayList<>(in.size());
+        List<Observation> queryTrajectory = new ArrayList<>(in.size());
         for (TrajEntry entry: in)
-            queryTrajectory.add(new GPXEntry(entry.getLat(), entry.getLng(), 0));
-        MatchResult ret = hmm.doWork(queryTrajectory);
+            queryTrajectory.add(new Observation(new GHPoint(entry.getLat(), entry.getLng())));
+        MatchResult ret = hmm.match(queryTrajectory);
         List<EdgeMatch> matches = ret.getEdgeMatches();
 
         NodeAccess accessor = hopperGraph.getNodeAccess();
@@ -74,10 +77,10 @@ public class HiddenMarkovModel implements Mapper {
 
             pre = edge.getBaseNode();
             int cur = edge.getAdjNode();
-            adjVertex = towerVertexes.get(GeoHash.encodeHash(accessor.getLatitude(cur), accessor.getLongitude(cur)));
+            adjVertex = towerVertexes.get(GeoHash.encodeHash(accessor.getLat(cur), accessor.getLon(cur)));
 
             if (first){
-                preVertex = towerVertexes.get(GeoHash.encodeHash(accessor.getLatitude(pre), accessor.getLongitude(pre)));
+                preVertex = towerVertexes.get(GeoHash.encodeHash(accessor.getLat(pre), accessor.getLon(pre)));
                 mappedTrajectory.add(preVertex);
                 first = false;
             }else{

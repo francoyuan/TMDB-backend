@@ -1,9 +1,22 @@
 package au.edu.rmit.bdm.Torch.mapMatching.algorithm;
 
 import au.edu.rmit.bdm.Torch.base.Torch;
+import com.graphhopper.config.LMProfile;
+import com.graphhopper.config.Profile;
 import com.graphhopper.routing.AlgorithmOptions;
+import com.graphhopper.routing.ev.BooleanEncodedValue;
+import com.graphhopper.routing.ev.DecimalEncodedValue;
+import com.graphhopper.routing.ev.VehicleAccess;
+import com.graphhopper.routing.ev.VehicleSpeed;
+import com.graphhopper.routing.util.EncodingManager;
+import com.graphhopper.routing.util.TraversalMode;
 import com.graphhopper.routing.weighting.FastestWeighting;
+import com.graphhopper.storage.Graph;
+import com.graphhopper.util.PMap;
 import com.graphhopper.util.Parameters;
+import org.checkerframework.checker.units.qual.A;
+
+import java.awt.*;
 
 /**
  * An Factory class provides simple APIs for instantiating map-matching algorithms supported by T-Torch.
@@ -25,12 +38,16 @@ public abstract class Mappers {
             throw new IllegalStateException("cannot do map-matching without a graph");
 
         Mapper mapper;
-
         switch (algorithm) {
             case Torch.Algorithms.HMM:
-                AlgorithmOptions algorithmOptions = AlgorithmOptions.start().
-                        algorithm(Parameters.Algorithms.DIJKSTRA).weighting(new FastestWeighting(graph.vehicle)).build();
-                mapper = new HiddenMarkovModel(graph, algorithmOptions);
+
+                PMap hints = new PMap();
+                hints.putObject("profile",graph.vehicle);
+                hints.putObject("lm.disable",true);
+                hints.putObject("ch.disable",true);
+//                AlgorithmOptions algorithmOptions = AlgorithmOptions.start().
+//                        algorithm(Parameters.Algorithms.DIJKSTRA).weighting(new FastestWeighting(graph.vehicle)).build();
+                mapper = new HiddenMarkovModel(graph, hints);
                 break;
             case Torch.Algorithms.HMM_PRECOMPUTED:
                 mapper = new PrecomputedHiddenMarkovModel(graph);
