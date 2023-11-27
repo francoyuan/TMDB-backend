@@ -36,8 +36,8 @@ public class Main {
 //        execute("select * from t where a=1 and b=2 or c=3 or d=4;");
 //        testTopkQuery("Porto");
 //        testPathQuery("Porto");
-//        testRangeQueryRadius("Porto");
-        testRangeQuerySquare("Porto");
+        testRangeQueryRadius("Porto");
+//        testRangeQuerySquare("Porto");
 //        testMapMatching();
 //        test();
     }
