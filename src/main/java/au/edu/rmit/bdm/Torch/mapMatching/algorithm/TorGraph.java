@@ -151,13 +151,7 @@ public class TorGraph {
         hopper = new GraphHopper();
         hopper.setOSMFile(OSMPath);
         hopper.setGraphHopperLocation(hopperDataPath);
-        hopper.setProfiles(new Profile("car").setVehicle("car").setTurnCosts(false));
-//        EncodingManager encodingManager = hopper.getEncodingManager();
-//        BooleanEncodedValue accessEnc = encodingManager.getBooleanEncodedValue(VehicleAccess.key("car"));
-//        DecimalEncodedValue speedEnc = encodingManager.getDecimalEncodedValue(VehicleSpeed.key("car"));
-//
-//        // snap some GPS coordinates to the routing graph and build a query graph
-//        Weighting weighting = CustomModelParser.createFastestWeighting(accessEnc, speedEnc, encodingManager);
+        hopper.setProfiles(new Profile(this.vehicleType).setVehicle(this.vehicleType).setTurnCosts(false));
         hopper.importOrLoad();
         logger.info("have read graph data into memory");
 

@@ -36,9 +36,9 @@ public class Main {
 //        testTopkQuery("Porto");
 //        testPathQuery("Porto");
         Transaction.initializeWithConfig(getProperties());
-//        testRangeQueryRadius("Porto");
+        testRangeQueryRadius("Porto");
 //        testRangeQuerySquare("Porto");
-        testMapMatching();
+//        testMapMatching();
 //        test();
     }
 
