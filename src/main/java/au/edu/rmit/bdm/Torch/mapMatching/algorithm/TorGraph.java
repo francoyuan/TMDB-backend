@@ -15,9 +15,16 @@ import com.github.davidmoten.rtree.RTree;
 import com.github.davidmoten.rtree.geometry.Geometries;
 import com.github.davidmoten.rtree.geometry.Geometry;
 import com.graphhopper.GraphHopper;
+import com.graphhopper.GraphHopperConfig;
 import com.graphhopper.config.Profile;
 import com.graphhopper.reader.osm.GraphHopperOSM;
+import com.graphhopper.routing.ev.BooleanEncodedValue;
+import com.graphhopper.routing.ev.DecimalEncodedValue;
+import com.graphhopper.routing.ev.VehicleAccess;
+import com.graphhopper.routing.ev.VehicleSpeed;
 import com.graphhopper.routing.util.*;
+import com.graphhopper.routing.weighting.Weighting;
+import com.graphhopper.routing.weighting.custom.CustomModelParser;
 import com.graphhopper.storage.BaseGraph;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.NodeAccess;
@@ -66,7 +73,7 @@ public class TorGraph {
     public boolean isBuilt = false;
 
     public boolean isSaved =false;
-    public String vehicle;
+
     private FileSetting setting;
 
     final Map<String, TorVertex> allPoints;
@@ -138,18 +145,19 @@ public class TorGraph {
             logger.error("Torch currently do not support re-initialize graph-hopper in the application lifeCycle");
             return this;
         }
-        this.vehicle=vehicle;
+        this.vehicleType=vehicle;
         logger.info("from {}, reading graph data into memory", OSMPath);
         //build hopper
-
         hopper = new GraphHopper();
         hopper.setOSMFile(OSMPath);
         hopper.setGraphHopperLocation(hopperDataPath);
-        hopper.setVehiclesString(vehicle);
-        hopper.setProfiles(
-                new Profile("car")
-                        .setVehicle(this.vehicle)
-        );
+        hopper.setProfiles(new Profile("car").setVehicle("car").setTurnCosts(false));
+//        EncodingManager encodingManager = hopper.getEncodingManager();
+//        BooleanEncodedValue accessEnc = encodingManager.getBooleanEncodedValue(VehicleAccess.key("car"));
+//        DecimalEncodedValue speedEnc = encodingManager.getDecimalEncodedValue(VehicleSpeed.key("car"));
+//
+//        // snap some GPS coordinates to the routing graph and build a query graph
+//        Weighting weighting = CustomModelParser.createFastestWeighting(accessEnc, speedEnc, encodingManager);
         hopper.importOrLoad();
         logger.info("have read graph data into memory");
 
@@ -241,8 +249,6 @@ public class TorGraph {
     private void buildTorGraph(){
 
         logger.info("building virtual graph.");
-
-
         //model all tower vertexes.
         BaseGraph graph = hopper.getBaseGraph();
         NodeAccess nodeAccessor = graph.getNodeAccess();

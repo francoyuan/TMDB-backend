@@ -42,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static au.edu.rmit.bdm.Torch.base.helper.FileUtil.*;
+import static edu.whu.tmdb.util.FileOperation.getFileName;
 import static edu.whu.tmdb.util.FileOperation.getFileNameWithoutExtension;
 
 /**
@@ -136,7 +137,7 @@ public class TorSaver {
         {
             writer.write(graph.vehicleType);
             writer.newLine();
-            writer.write("/res/raw/"+getFileNameWithoutExtension(graph.OSMPath));
+            writer.write("/res/raw/"+getFileName(graph.OSMPath));
             writer.flush();
         } catch (IOException e) {
             e.printStackTrace();

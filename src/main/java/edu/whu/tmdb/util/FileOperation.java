@@ -41,5 +41,10 @@ public class FileOperation {
         return fileName;
     }
 
+    public static String getFileName(String srcPath) {
+        Path path = Paths.get(srcPath);
+        return path.getFileName().toString();
+    }
+
 
 }

@@ -42,7 +42,7 @@ public abstract class Mappers {
             case Torch.Algorithms.HMM:
 
                 PMap hints = new PMap();
-                hints.putObject("profile",graph.vehicle);
+                hints.putObject("profile",graph.vehicleType);
                 hints.putObject("lm.disable",true);
                 hints.putObject("ch.disable",true);
 //                AlgorithmOptions algorithmOptions = AlgorithmOptions.start().
