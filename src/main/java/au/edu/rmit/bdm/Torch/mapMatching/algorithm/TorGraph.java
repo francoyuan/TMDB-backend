@@ -145,10 +145,11 @@ public class TorGraph {
         hopper = new GraphHopper();
         hopper.setOSMFile(OSMPath);
         hopper.setGraphHopperLocation(hopperDataPath);
-//        hopper.setVehiclesString(vehicle);
-//        Profile profile = new Profile(this.vehicle);
-//        profile.setWeighting("shortest");
-        hopper.setProfiles(new Profile(this.vehicle));
+        hopper.setVehiclesString(vehicle);
+        hopper.setProfiles(
+                new Profile("car")
+                        .setVehicle(this.vehicle)
+        );
         hopper.importOrLoad();
         logger.info("have read graph data into memory");
 
