@@ -6,8 +6,6 @@ import com.graphhopper.config.Profile;
 import com.graphhopper.routing.AlgorithmOptions;
 import com.graphhopper.routing.ev.BooleanEncodedValue;
 import com.graphhopper.routing.ev.DecimalEncodedValue;
-import com.graphhopper.routing.ev.VehicleAccess;
-import com.graphhopper.routing.ev.VehicleSpeed;
 import com.graphhopper.routing.util.EncodingManager;
 import com.graphhopper.routing.util.TraversalMode;
 import com.graphhopper.routing.weighting.FastestWeighting;

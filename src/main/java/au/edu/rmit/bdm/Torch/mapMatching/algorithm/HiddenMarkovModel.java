@@ -9,7 +9,6 @@ import com.graphhopper.matching.MapMatching;
 import com.graphhopper.matching.MatchResult;
 import com.graphhopper.matching.Observation;
 import com.graphhopper.routing.AlgorithmOptions;
-import com.graphhopper.storage.BaseGraph;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.EdgeIteratorState;
@@ -41,7 +40,7 @@ public class HiddenMarkovModel implements Mapper {
     private TorGraph torGraph;
 
     HiddenMarkovModel(TorGraph torGraph, PMap options){
-        hmm = MapMatching.fromGraphHopper(torGraph.getGH(), options);
+        hmm = new MapMatching(torGraph.getGH(),options);
         this.torGraph = torGraph;
     }
 
@@ -51,7 +50,7 @@ public class HiddenMarkovModel implements Mapper {
         logger.info("origin trajectory: {}", in);
 
         Trajectory<TowerVertex> mappedTrajectory = new Trajectory<>();
-        BaseGraph hopperGraph = torGraph.getGH().getBaseGraph();
+        Graph hopperGraph = torGraph.getGH().getGraphHopperStorage().getBaseGraph();
         Map<String, TowerVertex> towerVertexes =  torGraph.towerVertexes;
         Map<String,TorEdge> edges= torGraph.allEdges;
 

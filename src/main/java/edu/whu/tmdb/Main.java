@@ -7,6 +7,7 @@ package edu.whu.tmdb;/*
  * @Version:v1
  */
 
+import au.edu.rmit.bdm.Test;
 import edu.whu.tmdb.query.Transaction;
 import edu.whu.tmdb.query.torch.TorchConnect;
 import edu.whu.tmdb.query.utils.KryoSerialization;
@@ -35,10 +36,11 @@ public class Main {
 //        execute("select * from t where a=1 and b=2 or c=3 or d=4;");
 //        testTopkQuery("Porto");
 //        testPathQuery("Porto");
-        Transaction.initializeWithConfig(getProperties());
-        testRangeQueryRadius("Porto");
+//        Test.initGH();
+//        Transaction.initializeWithConfig(getProperties());
+//        testRangeQueryRadius("Porto");
 //        testRangeQuerySquare("Porto");
-//        testMapMatching();
+        testMapMatching();
 //        test();
     }
 

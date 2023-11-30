@@ -12,8 +12,11 @@ import au.edu.rmit.bdm.Torch.mapMatching.model.TowerVertex;
 import au.edu.rmit.bdm.Torch.queryEngine.Engine;
 import au.edu.rmit.bdm.Torch.queryEngine.query.QueryResult;
 import com.graphhopper.GraphHopper;
+import com.graphhopper.config.Profile;
+import com.graphhopper.reader.osm.GraphHopperOSM;
 import com.graphhopper.routing.util.EncodingManager;
 
+import com.graphhopper.routing.util.FlagEncoder;
 import edu.whu.tmdb.query.Transaction;
 import edu.whu.tmdb.query.utils.SelectResult;
 import edu.whu.tmdb.storage.memory.Tuple;
@@ -482,13 +485,16 @@ public class Test {
         vertexInvertedIndex.saveCompressed(setting.VERTEX_INVERTED_INDEX);
     }
 
-    private static void initGH(){
-//        GraphHopper hopper = new GraphHopperOSM();
-//        hopper.setDataReaderFile("Resources/Porto.osm.pbf");
-//        hopper.setGraphHopperLocation(setting.hopperURI);
-//        FlagEncoder vehicle = new CarFlagEncoder();
-//        hopper.setEncodingManager(new EncodingManager(vehicle));
-//        hopper.getCHFactoryDecorator().setEnabled(false);
-//        hopper.importOrLoad();
+    public static void initGH(){
+        GraphHopperOSM  hopper = new GraphHopperOSM();
+        hopper.setDataReaderFile("/Users/woshi/Project/IdeaProjects/TMDB/data/res/raw/Porto.osm.pbf");
+        hopper.setGraphHopperLocation("/Users/woshi/Project/IdeaProjects/TMDB/data/res/Porto/HopperMeta");
+
+        hopper.setEncodingManager(EncodingManager.create("car"));
+        hopper.setProfiles(new Profile("car")
+                .setVehicle("car"));
+        hopper.importOrLoad();
+        logger.info("have read graph data into memory");
+
     }
 }
