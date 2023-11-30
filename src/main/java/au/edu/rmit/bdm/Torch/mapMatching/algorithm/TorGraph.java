@@ -17,14 +17,12 @@ import com.github.davidmoten.rtree.geometry.Geometry;
 import com.graphhopper.GraphHopper;
 import com.graphhopper.GraphHopperConfig;
 import com.graphhopper.config.Profile;
+import com.graphhopper.reader.osm.GraphHopperOSM;
 import com.graphhopper.routing.ev.BooleanEncodedValue;
 import com.graphhopper.routing.ev.DecimalEncodedValue;
-import com.graphhopper.routing.ev.VehicleAccess;
-import com.graphhopper.routing.ev.VehicleSpeed;
 import com.graphhopper.routing.util.*;
 import com.graphhopper.routing.weighting.Weighting;
-import com.graphhopper.routing.weighting.custom.CustomModelParser;
-import com.graphhopper.storage.BaseGraph;
+import com.graphhopper.routing.weighting.custom.CustomWeighting;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.NodeAccess;
 import com.graphhopper.util.FetchMode;
@@ -147,10 +145,12 @@ public class TorGraph {
         this.vehicleType=vehicle;
         logger.info("from {}, reading graph data into memory", OSMPath);
         //build hopper
-        hopper = new GraphHopper();
-        hopper.setOSMFile(OSMPath);
+        hopper = new GraphHopperOSM();
+        hopper.setDataReaderFile(OSMPath);
         hopper.setGraphHopperLocation(hopperDataPath);
-        hopper.setProfiles(new Profile(this.vehicleType).setVehicle(this.vehicleType).setTurnCosts(false));
+        hopper.setEncodingManager(EncodingManager.create(this.vehicleType));
+        hopper.setProfiles(new Profile(this.vehicleType)
+                .setVehicle(this.vehicleType));
         hopper.importOrLoad();
         logger.info("have read graph data into memory");
 
@@ -243,7 +243,7 @@ public class TorGraph {
 
         logger.info("building virtual graph.");
         //model all tower vertexes.
-        BaseGraph graph = hopper.getBaseGraph();
+        Graph graph = hopper.getGraphHopperStorage().getBaseGraph();
         NodeAccess nodeAccessor = graph.getNodeAccess();
         logger.info("total number of tower nodes in the graph {}", graph.getNodes());
         for (int i = 0; i < graph.getNodes(); ++i) {

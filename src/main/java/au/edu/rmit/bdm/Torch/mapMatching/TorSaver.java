@@ -146,8 +146,7 @@ public class TorSaver {
 
     private void saveIdVertexLookupTable()  {
 
-
-        Graph hopperGraph = graph.getGH().getBaseGraph();
+        Graph hopperGraph = graph.getGH().getGraphHopperStorage().getBaseGraph();
         int numNodes = hopperGraph.getNodes();
 
         NodeAccess nodeAccess = hopperGraph.getNodeAccess();
