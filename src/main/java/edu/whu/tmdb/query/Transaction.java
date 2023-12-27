@@ -236,6 +236,11 @@ public class Transaction implements Runnable{
         TorchConnect.init(memConnect,baseDir);
         TorchConnect.torchConnect.initEngine();
     }
+
+    public void initEngine(String baseDir,String queryType){
+        TorchConnect.init(memConnect,baseDir);
+        TorchConnect.torchConnect.initEngine(queryType);
+    }
     private void Engine(String baseDir,String querySrc) throws IOException {
         initEngine(baseDir);
         TorchConnect.torchConnect.test(querySrc);

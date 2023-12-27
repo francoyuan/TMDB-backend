@@ -3,7 +3,8 @@ package edu.whu.tmdb.query.excecute.impl;
 import au.edu.rmit.bdm.Torch.base.model.Coordinate;
 import au.edu.rmit.bdm.Torch.base.model.TrajEntry;
 import au.edu.rmit.bdm.Torch.base.model.Trajectory;
-import au.edu.rmit.bdm.Torch.queryEngine.model.SearchWindow;
+import edu.whu.tmdb.query.utils.*;
+import edu.whu.tmdb.query.utils.traj.*;
 import edu.whu.tmdb.storage.memory.MemManager;
 import edu.whu.tmdb.query.torch.TorchConnect;
 import net.sf.jsqlparser.expression.Expression;
@@ -19,30 +20,28 @@ import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
+import java.util.stream.Collectors;
 
-import edu.whu.tmdb.query.utils.TMDBException;
 import edu.whu.tmdb.query.excecute.Select;
-import edu.whu.tmdb.query.utils.Formula;
-import edu.whu.tmdb.query.utils.MemConnect;
-import edu.whu.tmdb.query.utils.SelectResult;
-import edu.whu.tmdb.query.utils.traj.TrajTrans;
 import edu.whu.tmdb.storage.memory.Tuple;
 import edu.whu.tmdb.storage.memory.TupleList;
-import org.apache.commons.math3.analysis.function.Exp;
-import org.checkerframework.checker.units.qual.A;
-import org.checkerframework.checker.units.qual.Length;
 
-import static org.apache.commons.math3.distribution.fitting.MultivariateNormalMixtureExpectationMaximization.estimate;
+import static edu.whu.tmdb.query.utils.traj.Query.rangeQuery;
+import static edu.whu.tmdb.query.utils.traj.TrajTrans.getTrajsByIds;
 
 public class  Where {
     private MemConnect memConnect;
+
+    private boolean flag=false;
 
     private List<List<Expression>> orExpressionList=new ArrayList<>();
 
     public Where() throws TMDBException, IOException {
         this.memConnect=MemConnect.getInstance(MemManager.getInstance());
     }
+
 
     Formula formula=new Formula();
     public SelectResult where(PlainSelect plainSelect, SelectResult selectResult) throws TMDBException, IOException {
@@ -92,29 +91,25 @@ public class  Where {
 
     public int estimate(Expression expression){
         switch(expression.getClass().getSimpleName()){
-            case "InExpression": return 1;
-            case "EqualsTo": return 10;
-            case "MinorThan": return 100;
-            case "GreaterThan": return 100;
             case "Function": return 1000+functionEstimate((Function)expression);
-            default: return Integer.MAX_VALUE;
+            default: return 10;
         }
     }
 
     public int functionEstimate(Function expression){
-//        String name = expression.getName();
-//        switch(name.toLowerCase()){
-//            case "st_within": return
-//            case "st_intersect": return
-//            case "st_contain": return
-//            case "st_similarity": return
-//        }
-//        return null;
-        return 0;
+        GridCard porto = new GridCard().init("Porto");
+        if(porto==null) return 0;
+        String name = expression.getName();
+        switch(name.toLowerCase()){
+            case "st_within": return porto.getRangeCard(SpatialTrans.getSearchWindow(expression));
+            case "st_intersect": return porto.getPathCard(SpatialTrans.getTrajectory(expression));
+            case "st_contain": return porto.getStrictPathCard(SpatialTrans.getTrajectory(expression));
+//            case "st_similarity": return topKEstimate(expression);
+            default:
+                return 0;
+        }
     }
-
-
-
+    
 
     public SelectResult execute(Expression expression,SelectResult selectResult) throws TMDBException, IOException {
         SelectResult res=new SelectResult();
@@ -153,8 +148,16 @@ public class  Where {
     private SelectResult function(Function expression, SelectResult selectResult)  {
         String name = expression.getName();
         switch(name.toLowerCase()){
-            case "st_within": return range(expression,selectResult);
-            case "st_intersect": return path(expression,selectResult);
+            case "st_within":
+                if(flag || selectResult.getTpl().tuplelist.size()<150){
+                    flag=true;
+                }
+                return range(expression,selectResult);
+            case "st_intersect":
+                if(flag || selectResult.getTpl().tuplelist.size()<9000){
+                    flag=true;
+                }
+                return path(expression,selectResult);
             case "st_contain": return strictPath(expression,selectResult);
             case "st_similarity": return topK(expression,selectResult);
         }
@@ -164,7 +167,10 @@ public class  Where {
 
     private SelectResult topK(Function expression, SelectResult selectResult)  {
         List<Expression> expressions = expression.getParameters().getExpressions();
-
+        int k=Integer.parseInt(expressions.get(1).toString());
+        if(k>=selectResult.getTpl().tuplelist.size()){
+            return selectResult;
+        }
         List<Expression> list = ((Function) expressions.get(0)).getParameters().getExpressions();
         Trajectory<TrajEntry> trajEntries = new Trajectory<>();
         for (int i = 0; i < list.size(); i+=2) {
@@ -173,7 +179,6 @@ public class  Where {
             Coordinate coordinate = new Coordinate(lat, lng);
             trajEntries.add(coordinate);
         }
-        int k=Integer.parseInt(expressions.get(1).toString());
         List<Trajectory<TrajEntry>> trajectories=new ArrayList<>();
         // two parameter without the similarity function
         if(expressions.size()==2) {
@@ -219,16 +224,20 @@ public class  Where {
         List<Expression> expressions = expression.getParameters().getExpressions();
         Expression para = expressions.get(0);
         if(para.getClass().getSimpleName().toLowerCase().equals("function")){
-            List<Expression> list = ((Function) para).getParameters().getExpressions();
-            Trajectory<TrajEntry> trajEntries = new Trajectory<>();
-            for (int i = 0; i < list.size(); i+=2) {
-                Double lat = Double.parseDouble(list.get(i+1).toString());
-                Double lng = Double.parseDouble(list.get(i).toString());
-                Coordinate coordinate = new Coordinate(lat, lng);
-                trajEntries.add(coordinate);
+//            long start=System.currentTimeMillis();
+            if(flag) {
+                List<List<TrajEntry>> filtered = Query.pathQuery(SpatialTrans.getTrajectory(expression), TrajTrans.getTrajListBySelectResult(selectResult));
+                return TrajTrans.getSelectResultByList(filtered,selectResult);
             }
-            List<Trajectory<TrajEntry>> trajectories = TorchConnect.getTorchConnect().pathQuery(trajEntries);
-            return TrajTrans.getSelectResultByTrajList(trajectories,selectResult);
+//            long end=System.currentTimeMillis();
+//            System.out.println("filter: "+filtered.size());
+//            System.out.println("本地执行: "+(end-start));
+//            start=System.currentTimeMillis();
+            int[] trajectories = TorchConnect.getTorchConnect().pathQuery(SpatialTrans.getTrajectory(expression));
+//            end=System.currentTimeMillis();
+//            System.out.println(trajectories.length);
+//            System.out.println("Torch执行："+(end-start));
+            return getTrajsByIds(selectResult,trajectories);
         }
         else{
             List<Trajectory<TrajEntry>> trajectories = TorchConnect.getTorchConnect().pathQuery(para.toString());
@@ -238,32 +247,21 @@ public class  Where {
     }
 
     private SelectResult range(Function expression, SelectResult selectResult) {
-        List<Expression> expressions = expression.getParameters().getExpressions();
-        Function searchWindow = (Function) expressions.get(0);
-        List<Expression> swPara = searchWindow.getParameters().getExpressions();
-        if(swPara.get(1).getClass().getSimpleName().toLowerCase().equals("function")){
-            List<Expression> coor1 = ((Function) swPara.get(0)).getParameters().getExpressions();
-            List<Expression> coor2 = ((Function) swPara.get(1)).getParameters().getExpressions();
-            Double lat1=Double.parseDouble(coor1.get(1).toString());
-            Double lng1=Double.parseDouble(coor1.get(0).toString());
-            Coordinate coordinate1 = new Coordinate(lat1, lng1);
-            Double lat2=Double.parseDouble(coor2.get(1).toString());
-            Double lng2=Double.parseDouble(coor2.get(0).toString());
-            Coordinate coordinate2 = new Coordinate(lat2, lng2);
-            TorchConnect torchConnect = TorchConnect.getTorchConnect();
-            SearchWindow searchWindow1 = new SearchWindow(coordinate1, coordinate2);
-            List<Trajectory<TrajEntry>> trajectories = torchConnect.rangeQuery(searchWindow1);
-            return TrajTrans.getSelectResultByTrajList(trajectories,selectResult);
+//        long startTime=System.currentTimeMillis();
+        if(flag) {
+            List<List<TrajEntry>> filtered = rangeQuery(SpatialTrans.getSearchWindow(expression), TrajTrans.getTrajListBySelectResult(selectResult));
+//            System.out.println(filtered.size());
+            return TrajTrans.getSelectResultByList(filtered,selectResult);
         }
-        TorchConnect torchConnect = TorchConnect.getTorchConnect();
-        Function coordinate = (Function) swPara.get(0);
-        List<Expression> coor = coordinate.getParameters().getExpressions();
-        Double lat=Double.parseDouble(coor.get(1).toString());
-        Double lng=Double.parseDouble(coor.get(0).toString());
-        double radius = Double.parseDouble(swPara.get(1).toString());
-        Coordinate coordinate1 = new Coordinate(lat, lng);
-        List<Trajectory<TrajEntry>> trajectories = torchConnect.rangeQuery(new SearchWindow(coordinate1, radius));
-        return TrajTrans.getSelectResultByTrajList(trajectories,selectResult);
+//        long endTime=System.currentTimeMillis();
+//        System.out.println("本地运行："+(endTime-startTime));
+//        startTime=System.currentTimeMillis();
+//        else{
+            TorchConnect torchConnect = TorchConnect.getTorchConnect();
+            int[] trajectories = torchConnect.rangeQueryIds(SpatialTrans.getSearchWindow(expression));
+        System.out.println(trajectories.length);
+            return getTrajsByIds(selectResult,trajectories);
+//        }
     }
 
 

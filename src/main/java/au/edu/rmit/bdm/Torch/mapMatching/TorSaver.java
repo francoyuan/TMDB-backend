@@ -13,9 +13,13 @@ import com.github.davidmoten.geo.GeoHash;
 import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.NodeAccess;
 import edu.whu.tmdb.query.enums.DeputyType;
+import edu.whu.tmdb.query.utils.KryoSerialization;
+import edu.whu.tmdb.storage.memory.MemManager;
 import edu.whu.tmdb.storage.memory.Tuple;
 import edu.whu.tmdb.query.Transaction;
 import edu.whu.tmdb.query.utils.SelectResult;
+import edu.whu.tmdb.storage.utils.K;
+import edu.whu.tmdb.storage.utils.V;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -117,12 +121,14 @@ public class TorSaver {
         if (saveAll) {
             saveMeta();
             saveIdVertexLookupTable();
+            transaction.SaveAll();
             saveEdges();
             transaction.SaveAll();
             getAfew();
             transaction.SaveAll();
             addTime();
             edgeInvertedList.saveCompressed(setting.EDGE_INVERTED_INDEX);
+            edgeCardSave();
             vertexInvertedIndex.saveCompressed(setting.VERTEX_INVERTED_INDEX);
 
 
@@ -145,7 +151,6 @@ public class TorSaver {
     }
 
     private void saveIdVertexLookupTable()  {
-
         Graph hopperGraph = graph.getGH().getGraphHopperStorage().getBaseGraph();
         int numNodes = hopperGraph.getNodes();
 
@@ -164,7 +169,6 @@ public class TorSaver {
         }
         ValuesStatement valuesStatement = new ValuesStatement().withExpressions(new ExpressionList().withExpressions(expressions));
         idVertexInsert(valuesStatement);
-
     }
 
     private void saveEdges()  {
@@ -624,5 +628,19 @@ public class TorSaver {
         Insert insert = new Insert().withTable(new Table(trajectoryTime)).withColumns(insertColumns).withSelect(new Select().withSelectBody(valuesStatement));
         transaction.query(insert);
     }
+
+    private void edgeCardSave(){
+        HashMap<Integer,Integer> edgeCard=new HashMap<>();
+        for (int edgeId:
+             edgeInvertedList.compressedIndex.keySet()) {
+            List<String> values = edgeInvertedList.getKeys(edgeId);
+            edgeCard.put(edgeId,values.size());
+        }
+        String key=setting.TorchBase.split("/")[0]+"/edgeCard";
+        String v = KryoSerialization.serializeToString(edgeCard);
+        MemManager.getInstance().memTable.put(new K(key),new V(v));
+        MemManager.getInstance().saveAll();
+    }
+
 
 }

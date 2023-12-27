@@ -50,7 +50,7 @@ public class QueryProperties {
         baseDir = "Torch";
         uriPrefix = "";
         useRaw = false;
-        resolveAll = true;
+        resolveAll = false;
         queryUsed = new HashSet<>();
         isNantong = false;
         return this;

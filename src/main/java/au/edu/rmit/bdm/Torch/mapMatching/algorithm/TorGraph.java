@@ -41,6 +41,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -201,8 +202,9 @@ public class TorGraph {
         plainSelect.addSelectItems(new AllColumns());
         EqualsTo where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(getFileNameWithoutExtension(setting.TorchBase)));
         plainSelect.setWhere(where);
-        SelectResult id_vertex_result = transaction.query(new Select().withSelectBody(plainSelect));
-        for (Tuple tuple : id_vertex_result.getTpl().tuplelist) {
+        WeakReference<SelectResult> id_vertex_result = new WeakReference<>(transaction.query(new Select().withSelectBody(plainSelect)));
+
+        for (Tuple tuple : id_vertex_result.get().getTpl().tuplelist) {
             int id = ((Long)tuple.tuple[1]).intValue();
             double lat = Double.parseDouble((String) tuple.tuple[2]);
             double lng = Double.parseDouble((String) tuple.tuple[3]);
@@ -219,9 +221,9 @@ public class TorGraph {
         plainSelect.addSelectItems(new AllColumns());
         where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(getFileNameWithoutExtension(setting.TorchBase)));
         plainSelect.setWhere(where);
-        SelectResult id_edge_result = transaction.query(new Select().withSelectBody(plainSelect));
+        WeakReference<SelectResult> id_edge_result = new WeakReference<>(transaction.query(new Select().withSelectBody(plainSelect)));
         for (Tuple tuple:
-                id_edge_result.getTpl().tuplelist) {
+                id_edge_result.get().getTpl().tuplelist) {
             int edgeId = ((Long)tuple.tuple[1]).intValue();
             int vertexId1 = ((Long)tuple.tuple[2]).intValue();
             int vertexId2 = ((Long)tuple.tuple[3]).intValue();
@@ -233,6 +235,7 @@ public class TorGraph {
 
 
         isBuilt = true;
+        System.gc();
         return this;
     }
 

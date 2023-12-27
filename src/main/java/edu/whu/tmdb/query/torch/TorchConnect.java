@@ -1,16 +1,8 @@
 package edu.whu.tmdb.query.torch;
 
-import au.edu.rmit.bdm.Torch.base.db.TrajectoryPool;
-import au.edu.rmit.bdm.Torch.queryEngine.query.QueryPool;
-import au.edu.rmit.bdm.Torch.queryEngine.query.TrajectoryResolver;
 import edu.whu.tmdb.query.Transaction;
-import edu.whu.tmdb.query.torch.proto.IdEdge;
-import edu.whu.tmdb.query.torch.proto.IdEdgeRaw;
-import edu.whu.tmdb.query.torch.proto.IdVertex;
-import edu.whu.tmdb.query.torch.proto.TrajectoryTimePartial;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
 
 import java.io.*;
 import java.util.*;
@@ -24,14 +16,9 @@ import au.edu.rmit.bdm.Torch.queryEngine.model.SearchWindow;
 import au.edu.rmit.bdm.Torch.queryEngine.query.QueryResult;
 import edu.whu.tmdb.query.excecute.Create;
 import edu.whu.tmdb.query.utils.TMDBException;
-import edu.whu.tmdb.query.excecute.Insert;
-import edu.whu.tmdb.query.excecute.Select;
 import edu.whu.tmdb.query.excecute.impl.CreateImpl;
-import edu.whu.tmdb.query.excecute.impl.InsertImpl;
-import edu.whu.tmdb.query.excecute.impl.SelectImpl;
 import edu.whu.tmdb.query.utils.Constants;
 import edu.whu.tmdb.query.utils.MemConnect;
-import edu.whu.tmdb.query.utils.SelectResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,14 +83,29 @@ public class TorchConnect {
         init=true;
     }
 
+    public void initEngine(String queryType){
+        if(init) return;
+        engine=Engine.getBuilder().baseDir(baseDir).addQuery(queryType).build();
+        init=true;
+    }
+
+    public void setResolveAll(Boolean resolveAll){
+
+    }
+
     public List<Trajectory<TrajEntry>> rangeQuery(SearchWindow searchWindow){
         QueryResult inRange = engine.findInRange(searchWindow);
         return inRange.resolvedRet;
     }
 
-    public List<Trajectory<TrajEntry>> pathQuery(Trajectory trajectory){
+    public int[] rangeQueryIds(SearchWindow searchWindow){
+        QueryResult inRange = engine.findInRange(searchWindow);
+        return inRange.idArray;
+    }
+
+    public int[] pathQuery(Trajectory trajectory){
         QueryResult onPath = engine.findOnPath(trajectory);
-        return onPath.resolvedRet;
+        return onPath.idArray;
     }
 
     public List<Trajectory<TrajEntry>> pathQuery(String pathName){
@@ -155,6 +157,8 @@ public class TorchConnect {
             reader = new BufferedReader(new FileReader(filePath));
             String line;
             List<List<TrajEntry>> list=new ArrayList<>();
+            int limit=10000;
+            int i=0;
             // 逐行读取文件内容
             while ((line = reader.readLine()) != null) {
                 String[] sa=line.split("\\s+");
@@ -162,11 +166,16 @@ public class TorchConnect {
 //                traj=traj.replace("[","").replace("]","").replace(",","|");
                 temp=temp.replace("[","").replace("]","");
                 String[] split = temp.split(",");
-
-                double[] traj= Arrays.stream(split).mapToDouble(e -> Double.parseDouble(e)).toArray();
+                if(split.length>200){
+                    continue;
+                }
+                double[] traj= Arrays.stream(split).filter(e-> e.length()!=0).mapToDouble(e -> Double.parseDouble(e)).toArray();
                 sql="Insert into traj values ("+sa[0]+",-1,'"+getFileNameWithoutExtension(srcPath)+"',Array"+Arrays.toString(traj)+")";
 //                sql="Insert into traj values ("+sa[0]+",-1,'"+getFileNameWithoutExtension(srcPath)+"','"+traj+"')";
                 Transaction.getInstance().query(sql);
+                if(i++>limit){
+                    break;
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();

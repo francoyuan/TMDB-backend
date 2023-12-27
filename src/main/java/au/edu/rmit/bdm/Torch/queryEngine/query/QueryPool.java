@@ -17,7 +17,9 @@ import au.edu.rmit.bdm.Torch.mapMatching.model.TowerVertex;
 import au.edu.rmit.bdm.Torch.queryEngine.model.TimeInterval;
 import au.edu.rmit.bdm.Torch.queryEngine.similarity.SimilarityFunction;
 import edu.whu.tmdb.query.utils.Constants;
+import edu.whu.tmdb.storage.memory.MemManager;
 import edu.whu.tmdb.storage.utils.Constant;
+import edu.whu.tmdb.storage.utils.K;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -161,6 +163,11 @@ public class QueryPool extends HashMap<String, Query> {
 
         SimilarityFunction.MeasureType measureType = convertMeasureType(props.similarityMeasure);
         this.LEVI = new LEVI(vertexInvertedIndex, vertexGridIndex, measureType, trajVertexRepresentationPool, idVertexLookup, setting);
+        String[] split = setting.TorchBase.split("/");
+        String base=split[split.length-2];
+        if(MemManager.getInstance().search(new K(base+"/gridCard"))==null){
+            this.LEVI.saveCard();
+        }
     }
 
     public void update(String queryType, Map<String,String> props) {
@@ -236,10 +243,10 @@ public class QueryPool extends HashMap<String, Query> {
         return measureType;
     }
 
-    public QueryResult resolve(int[] idArr)  {
-        List<Trajectory<TrajEntry>> resolved = resolver.resolveResult(idArr);
-        return new QueryResult(resolved);
-    }
+//    public QueryResult resolve(int[] idArr)  {
+//        List<Trajectory<TrajEntry>> resolved = resolver.resolveResult(idArr);
+//        return new QueryResult(resolved);
+//    }
 
     public FileSetting getFileSettings() {
         return setting;
