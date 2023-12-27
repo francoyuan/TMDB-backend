@@ -25,7 +25,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <source>17</source>
-                    <target>8</target>
+                    <target>17</target>
                 </configuration>
             </plugin>
         </plugins>
