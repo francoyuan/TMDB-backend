@@ -103,17 +103,6 @@ public class TrajectoryResolver {
             vertexLookup.put(Integer.parseInt(splits[1]), new Coordinate(Double.parseDouble(splits[2]), Double.parseDouble(splits[3])));
         }
 
-//        try {
-//            BufferedReader reader = new BufferedReader(new FileReader(setting.ID_VERTEX_LOOKUP));
-//            String line;
-//            while ((line = reader.readLine()) !=null){
-//                String[] splits = line.split(";");
-//                vertexLookup.put(Integer.parseInt(splits[0]), new Coordinate(Double.parseDouble(splits[1]), Double.parseDouble(splits[2])));
-//            }
-//
-//        } catch (IOException e) {
-//            logger.debug("cannot find/read file: " + setting.ID_VERTEX_LOOKUP );
-//        }
     }
 
     QueryResult resolve (String queryType, List<String> trajIds, List<TrajEntry> rawQuery, Trajectory<TrajEntry> _mappedQuery)  {
@@ -185,11 +174,6 @@ public class TrajectoryResolver {
         return l;
     }
 
-    public List<Trajectory<TrajEntry>> resolveResult(int[] ids)  {
-        List<String> trajIds = new ArrayList<>(ids.length);
-        for (int i : ids) trajIds.add(String.valueOf(i));
-        return resolveRet(trajIds);
-    }
 
 
 
@@ -225,42 +209,6 @@ public class TrajectoryResolver {
                         }
                     }
                 }
-                ret.add(t);
-            }
-        }else{
-            String[] tokens = null;
-
-            ret = new ArrayList<>(trajIds.size());
-            for (String trajId : trajIds) {
-
-                int[] vertices = trajVertexRepresentationPool.get(trajId);
-
-                if (vertices == null) {
-                    logger.debug("cannot find trajectory id {}, this should not happen", trajId);
-                    continue;
-                }
-
-                Trajectory<TrajEntry> t = new Trajectory<>();
-                t.id = trajId;
-
-                for (int i = 1; i < vertices.length; i++) {
-
-                    Coordinate from = vertexLookup.get(vertices[i-1]);
-                    Coordinate to = vertexLookup.get(vertices[i]);
-
-                    t.add(from);
-                    double dist = GeoUtil.distance(from, to);
-                    int addNum = ((int)dist) / 50;
-                    if (addNum!=0){
-                        double latIncrement = (to.lat - from.lat) / (addNum + 1);
-                        double lngIncrement = (to.lng - from.lng) / (addNum + 1);
-                        for (int j = 0; j < addNum; j++) {
-                            Coordinate c = new Coordinate(from.lat + (j + 1) * latIncrement, from.lng + (j + 1) * lngIncrement);
-                            t.add(c);
-                        }
-                    }
-                }
-                
                 ret.add(t);
             }
         }

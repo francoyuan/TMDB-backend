@@ -20,9 +20,9 @@ public abstract class InvertedIndex implements Index {
     public boolean loaded = false;
     public FileSetting setting;
 
-    HashMap<Integer, Map<String, Integer>> index = new HashMap<>();
+    public HashMap<Integer, Map<String, Integer>> index = new HashMap<>();
 
-    HashMap<Integer, CompressedPairs> compressedIndex = new HashMap<>();
+    public HashMap<Integer, CompressedPairs> compressedIndex = new HashMap<>();
     IntegratedIntCompressor sortedIntCodec = new IntegratedIntCompressor();
     IntCompressor unsortedIntCodec = new IntCompressor();
 

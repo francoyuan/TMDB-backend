@@ -13,6 +13,11 @@ import au.edu.rmit.bdm.Torch.mapMatching.model.TowerVertex;
 import au.edu.rmit.bdm.Torch.queryEngine.model.*;
 import au.edu.rmit.bdm.Torch.queryEngine.query.TrajectoryResolver;
 import au.edu.rmit.bdm.Torch.queryEngine.similarity.SimilarityFunction;
+import edu.whu.tmdb.query.Transaction;
+import edu.whu.tmdb.query.utils.KryoSerialization;
+import edu.whu.tmdb.storage.memory.MemManager;
+import edu.whu.tmdb.storage.utils.K;
+import edu.whu.tmdb.storage.utils.V;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +73,7 @@ public class LEVI implements WindowQueryIndex, TopKQueryIndex {
     }
 
 
-    //todo
+    // range query
     @Override
     public List<String> findInRange(Geometry geometry) {
         Collection<Integer> points;
@@ -88,6 +93,46 @@ public class LEVI implements WindowQueryIndex, TopKQueryIndex {
             ret.addAll(vertexInvertedIndex.getKeys(pointId));
         logger.debug("number of trajectories in window: {}", ret.size());
         return new ArrayList<>(ret);
+    }
+
+    public void saveCard(){
+        VertexGridIndex vertexGridIndex = new VertexGridIndex(gridIndex.allPointMap, 1000);
+        vertexGridIndex.build(setting.TorchBase);
+        HashMap<Integer,Integer> gridCard=new HashMap<>();
+        //all vertex in grid
+        HashMap<Integer,Integer> gridAllVertex=new HashMap<>();
+        //vertex has traj pass in grid
+        HashMap<Integer,Integer> gridTrajVertex=new HashMap<>();
+        for (Integer id:vertexGridIndex.keySet()){
+            Set<String> trajs=new HashSet<>();
+            int countTrajVertex=0;
+            for (int vId :
+                    vertexGridIndex.get(id)) {
+                List<String> keys = vertexInvertedIndex.getKeys(vId);
+                if(!keys.isEmpty()) {
+                    countTrajVertex++;
+                    trajs.addAll(keys);
+                }
+            }
+            if(!trajs.isEmpty()) {
+                gridAllVertex.put(id,vertexGridIndex.get(id).size());
+                gridTrajVertex.put(id,countTrajVertex);
+                gridCard.put(id, trajs.size());
+            }
+        }
+        String cardSerialization = KryoSerialization.serializeToString(gridCard);
+        String vertexSerialization = KryoSerialization.serializeToString(gridAllVertex);
+        String trajVSerialization = KryoSerialization.serializeToString(gridTrajVertex);
+        String[] split = setting.TorchBase.split("/");
+        String base=split[split.length-2];
+        String cardKey=base+"/gridCard";
+        String vertexKey=base+"/gridVertex";
+        String trajVKey=base+"/gridTrajV";
+        MemManager.getInstance().memTable.put(new K(cardKey),new V(cardSerialization));
+        MemManager.getInstance().memTable.put(new K(vertexKey),new V(vertexSerialization));
+        MemManager.getInstance().memTable.put(new K(trajVKey),new V(trajVSerialization));
+        vertexGridIndex.saveGridCardStat(base);
+        Transaction.getInstance().SaveAll();
     }
 
     @Override

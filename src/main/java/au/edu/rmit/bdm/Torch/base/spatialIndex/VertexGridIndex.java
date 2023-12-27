@@ -47,7 +47,7 @@ public class VertexGridIndex extends HashMap<Integer, Collection<Integer>> imple
 
     int horizontalTileNumber, verticalTileNumber;
 
-    private Map<Integer, TowerVertex> allPointMap;
+    public Map<Integer, TowerVertex> allPointMap;
     private Map<Integer, Tile> tileInfo;
 
     /**
@@ -74,18 +74,15 @@ public class VertexGridIndex extends HashMap<Integer, Collection<Integer>> imple
         File file = new File(path);
         String parentFile = file.getParentFile().toString();
         File file1 = new File(parentFile + "/" + INDEX_FILE_POINT);
-        if (file1.exists()) {
+        if (file1.exists() && tileLen==10) {
             load(parentFile);
         }else {
             logger.info("build spatial vertexGridIndex");
-            //if (load(path)) return true;
-//            this.tileLen=this.tileLen*10;
+//            if (load(path)) return true;
             _build();
-//            saveGridCardStat(parentFile);
-//            this.clear();
-//            this.tileLen=this.tileLen/10;
-//            _build();
-            save(parentFile);
+            if(tileLen==10) {
+                save(parentFile);
+            }
         }
         loaded = true;
         //saveUncompressed();
@@ -181,8 +178,6 @@ public class VertexGridIndex extends HashMap<Integer, Collection<Integer>> imple
             logger.debug("gridId < horizontalTileNumber * verticalTileNumber");
             return this.horizontalTileNumber * this.verticalTileNumber;
         }
-
-
         return tileID;
     }
 
@@ -282,22 +277,19 @@ public class VertexGridIndex extends HashMap<Integer, Collection<Integer>> imple
         }
     }
 
-    private void saveGridCardStat(String path) {
-        HashMap<Integer,Integer> card=new HashMap<>();
-        for (Integer id:this.keySet()){
-            card.put(id, get(id).size());
-        }
-        String s = KryoSerialization.serializeToString(card);
-        String[] split = path.split("/");
-        String base=split[split.length-2];
-        String key=base+"/gridCard";
+    public void saveGridCardStat(String base) {
+        HashMap<String,Float> gridInfo=new HashMap<>();
+        gridInfo.put("left",this.leftLng);
+        gridInfo.put("right",this.rightLng);
+        gridInfo.put("upper",this.upperLat);
+        gridInfo.put("lower",this.lowerLat);
+        gridInfo.put("deltaLon",this.deltaLon);
+        gridInfo.put("deltaLat",this.deltaLat);
+        gridInfo.put("horizontalTileNumber", (float) this.horizontalTileNumber);
+        gridInfo.put("verticalTileNumber", (float) this.verticalTileNumber);
+        String key=base+"/gridInfo";
+        String s = KryoSerialization.serializeToString(gridInfo);
         MemManager.getInstance().memTable.put(new K(key),new V(s));
-        MemManager.getInstance().saveAll();
-        logger.info("stored grid cardinality info, the key is "+key);
-        logger.info("stored grid cardinality info, the path is "+path);
-        V search = MemManager.getInstance().search(new K(base + "/gridCard"));
-        HashMap<Integer,Integer> o = (HashMap<Integer, Integer>) KryoSerialization.deserializeFromString(search.valueString);
-        Integer count = o.get(100);
     }
 
     Collection<Integer> pointsInWindow(SearchWindow window) {
@@ -332,6 +324,7 @@ public class VertexGridIndex extends HashMap<Integer, Collection<Integer>> imple
         return vertices;
     }
 
+    //vertex grid index vgi
     private Collection<Integer> _pointsInWindow(SearchWindow window) {
         int pos = calculateTileID(window.middle);
         int leftUpperID = calculateTileID(window.upperLat, window.leftLng);

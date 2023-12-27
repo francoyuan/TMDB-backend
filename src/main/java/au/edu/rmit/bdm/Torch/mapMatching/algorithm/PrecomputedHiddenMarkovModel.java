@@ -80,7 +80,7 @@ public class PrecomputedHiddenMarkovModel implements Mapper {
 
         final long time = System.currentTimeMillis();
 
-        ExecutorService threadPool = new ThreadPoolExecutor(10, 15, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<>());
+        ExecutorService threadPool = new ThreadPoolExecutor(100, 200, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<>());
         AtomicInteger counter = new AtomicInteger(1);
         int reportForEach = in.size() / 1000 == 0 ? 50 : (int)Math.floor(in.size() / 1000.) ;
 

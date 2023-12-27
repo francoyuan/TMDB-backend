@@ -179,9 +179,9 @@ public class Engine {
     public void setTimeInterval(TimeInterval interval, boolean contains){
         pool.setTimeInterval(interval, contains);
     }
-    public QueryResult resolve(int[] idArr)  {
-        return pool.resolve(idArr);
-    }
+//    public QueryResult resolve(int[] idArr)  {
+//        return pool.resolve(idArr);
+//    }
 
     public static class Builder{
 

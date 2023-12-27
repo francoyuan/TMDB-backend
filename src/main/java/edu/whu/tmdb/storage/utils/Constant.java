@@ -20,7 +20,7 @@ public class Constant {
     // memTable最大大小为4MB=4*1024*1024B，超过就会触发compact到外存
     public static final long MAX_MEM_SIZE = 4L * 1024 * 1024;
 
-    public static String ROOT="";
+    public static String ROOT="data/";
 
     // LSM-Tree文件目录
     public static String DATABASE_DIR = "data/level/";
