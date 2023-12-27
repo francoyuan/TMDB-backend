@@ -41,9 +41,11 @@ class PathQuery extends QueryImpl {
 
         List<String> trajIds = isStrictPath ? index.findByStrictPath(queryEdges) : index.findByPath(queryEdges);
         logger.info("trajectory ids found: {}", trajIds);
-        return isByStName ?
-                resolver.resolve(isStrictPath ? "SPQ" : Torch.QueryType.PathQ, trajIds, null, mapped)
-        : resolver.resolve(isStrictPath ? "SPQ" : Torch.QueryType.PathQ, trajIds, raw, mapped);
+        int[] array = trajIds.stream().mapToInt(Integer::parseInt).toArray();
+        return QueryResult.genUnresolvedRet(Torch.QueryType.RangeQ,array,null,null);
+//        return isByStName ?
+//                resolver.resolve(isStrictPath ? "SPQ" : Torch.QueryType.PathQ, trajIds, null, mapped)
+//        : resolver.resolve(isStrictPath ? "SPQ" : Torch.QueryType.PathQ, trajIds, raw, mapped);
     }
 
     @Override

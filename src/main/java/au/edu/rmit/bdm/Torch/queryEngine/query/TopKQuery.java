@@ -49,7 +49,9 @@ class TopKQuery extends QueryImpl{
         logger.info("total qualified trajectories: {}", trajIds.size());
         logger.info("top {} trajectory id set: {}",trajIds.size(),trajIds);
 
-        return resolver.resolve(Torch.QueryType.TopK, trajIds, raw, mapped);
+        int[] array = trajIds.stream().mapToInt(Integer::parseInt).toArray();
+        return QueryResult.genUnresolvedRet(Torch.QueryType.RangeQ,array,null,null);
+//        return resolver.resolve(Torch.QueryType.TopK, trajIds, raw, mapped);
     }
 
 
@@ -57,6 +59,8 @@ class TopKQuery extends QueryImpl{
 
         List<String> trajIds = index.findTopK(k, mapped, null, resolver);
         logger.info("top {} trajectory id set: {}",trajIds.size(),trajIds);
-        return resolver.resolve(Torch.QueryType.TopK, trajIds, raw, mapped);
+        int[] array = trajIds.stream().mapToInt(Integer::parseInt).toArray();
+        return QueryResult.genUnresolvedRet(Torch.QueryType.RangeQ,array,null,null);
+//        return resolver.resolve(Torch.QueryType.TopK, trajIds, raw, mapped);
     }
 }

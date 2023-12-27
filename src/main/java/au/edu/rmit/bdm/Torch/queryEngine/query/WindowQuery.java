@@ -26,7 +26,9 @@ class WindowQuery extends QueryImpl {
 
         SearchWindow window = (SearchWindow) windowRange;
         List<String> trajIds = index.findInRange(window);
-        return resolver.resolve(Torch.QueryType.RangeQ, trajIds, null, null);
+        int[] array = trajIds.stream().mapToInt(Integer::parseInt).toArray();
+        return QueryResult.genUnresolvedRet(Torch.QueryType.RangeQ,array,null,null);
+//        return resolver.resolve(Torch.QueryType.RangeQ, trajIds, null, null);
     }
 
     @Override
