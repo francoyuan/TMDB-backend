@@ -37,13 +37,13 @@ public class Main {
 //        execute("CREATE CLASS t (name char,age int, salary int);");
 //        execute("select * from t where a=1 and b=2 or c=3 or d=4;");
         //testTopkQuery("Porto");
-        testPathQuery("Porto");
+//        testPathQuery("Porto");
 //        Test.initGH();
 //        readAndWrite();
 //        writeSql();
 //        Transaction.initializeWithConfig(getProperties());
 //        Transaction.getInstance().initEngine("Porto");
-//        testRangeQueryRadius("Porto");
+        testRangeQueryRadius("Porto");
 //       testRangeQuerySquare("Porto");
 //        testMapMatching();f
 //        getResult();
@@ -77,7 +77,7 @@ public class Main {
 
     public static void testPathQuery(String baseDir){
         Transaction.getInstance().initEngine(baseDir,Torch.QueryType.PathQ);
-        execute("select traj_id, traj\n" +
+        SelectResult execute = execute("select traj_id, traj\n" +
                 "from traj\n" +
                 "where traj_name='porto_raw_trajectory_full' and " +
                 "st_intersect(Trajectory(-8.639847,41.159826,-8.640351,41.159871,-8.642196,41.160114,-8.644455,41.160492,-8.646921,41.160951,-8.649999,41.161491,-8.653167,41.162031,-8.656434,41.16258,-8.660178,41.163192,-8.663112,41.163687,-8.666235,41.1642,-8.669169,41.164704,-8.670852,41.165136,-8.670942,41.166576,-8.66961,41.167962,-8.668098,41.168988,-8.66664,41.170005,-8.665767,41.170635,-8.66574,41.170671\n" +

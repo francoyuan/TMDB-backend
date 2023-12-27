@@ -133,7 +133,7 @@ public class TrajTrans {
 
         for (Tuple tuple
                 : selectResult.getTpl().tuplelist) {
-            if (set.contains(tuple.tuple[0])) {
+            if (set.contains(((Long)tuple.tuple[0]).intValue())){
                 tupleList.addTuple(tuple);
             }
         }
