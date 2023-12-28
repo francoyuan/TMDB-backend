@@ -36,7 +36,7 @@ public class MemManager {
     public static SwitchingTable switchingTable = new SwitchingTable();
 
     // 日志管理
-    public LogManager logManager = new LogManager(this);
+//    public LogManager logManager = new LogManager(this);
 
     // 缓存管理
     public static CacheManager cacheManager = new CacheManager();
