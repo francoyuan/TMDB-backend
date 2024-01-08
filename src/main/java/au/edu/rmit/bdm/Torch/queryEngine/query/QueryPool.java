@@ -101,8 +101,6 @@ public class QueryPool extends HashMap<String, Query> {
                 initGH(setting.hopperURI, osmPath, vehicleType).buildFromDiskData();
         idVertexLookup = graph.idVertexLookup;
         mapper = Mappers.getMapper(Torch.Algorithms.HMM, graph);
-
-
     }
 
     private Query initPathQuery() {

@@ -232,8 +232,6 @@ public class TorGraph {
             TowerVertex t2 = idVertexLookup.get(vertexId2);
             allEdges.put(t1.hash+ t2.hash, new TorEdge(edgeId, t1, t2, len));
         }
-
-
         isBuilt = true;
         System.gc();
         return this;

@@ -78,7 +78,7 @@ public class TrajectoryResolver {
             rawEdgeLookup = new HashMap<>();
             timeSpanLookup = new HashMap<>();
 //            loadRawEdgeLookupTable();
-            loadTimeSpanLookupTable();
+//            loadTimeSpanLookupTable();
         }else{
             vertexLookup = new HashMap<>();
             trajVertexRepresentationPool = new TrajVertexRepresentationPool(false, setting);
