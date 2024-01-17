@@ -11,6 +11,7 @@ import au.edu.rmit.bdm.Test;
 import au.edu.rmit.bdm.Torch.base.Torch;
 import com.alibaba.fastjson2.support.csv.CSVReader;
 import edu.whu.tmdb.gtfs.Gtfs2DB;
+import edu.whu.tmdb.gtfs.TrajectorySimplifier;
 import edu.whu.tmdb.query.Transaction;
 import edu.whu.tmdb.query.torch.TorchConnect;
 import edu.whu.tmdb.query.utils.Helper;
@@ -37,15 +38,16 @@ import java.util.*;
 public class Main {
     public static void main(String[] args) throws IOException {
 //        execute("CREATE CLASS t (name char,age int, salary int);");
-//        execute("select * from t where a=1 and b=2 or c=3 or d=4;");
+//        execute("create class porto (id int, geom linestring);");
+//        execute("select * from traj");
 //        testTopkQuery("Porto");
 //        testPathQuery("Porto");
 //        testRangeQueryRadius("Porto");
-//       testRangeQuerySquare("Porto");
-        getResult();
-//        testMapMatching();
+        testRangeQuerySquare("Gtfs");
 //        getResult();
-//        test();
+//        gtfsMapMatching();
+//        getMap();
+//        TrajectorySimplifier.simplify();
     }
 
 
@@ -57,11 +59,18 @@ public class Main {
         System.out.println(gridCard.size());
     }
 
-    public static void testMapMatching() throws IOException {
+    public static void portoMapMatching() throws IOException {
         Transaction transaction=Transaction.getInstance();
         transaction.mapMatching("Porto",
-                "data/porto_raw_trajectory_full.txt",
+                "data/Porto.txt",
                 "data/res/raw/Porto.osm.pbf");
+    }
+
+    public static void gtfsMapMatching() throws IOException {
+        Transaction transaction=Transaction.getInstance();
+        transaction.mapMatching("Gtfs",
+                "data/Gtfs_simplified.txt",
+                "data/nyc/NewYork.osm.pbf");
     }
 
     public static void testTopkQuery(String baseDir){
@@ -76,10 +85,9 @@ public class Main {
 
     public static void testPathQuery(String baseDir){
         Transaction.getInstance().initEngine(baseDir);
-//        Transaction.getInstance().initEngine(baseDir,Torch.QueryType.PathQ);
         SelectResult execute = execute("select traj_id, traj\n" +
                 "from traj\n" +
-                "where traj_name='porto_raw_trajectory_full' and " +
+                "where traj_name='Porto' and " +
                 "st_intersect(Trajectory(-8.639847,41.159826,-8.640351,41.159871,-8.642196,41.160114,-8.644455,41.160492,-8.646921,41.160951,-8.649999,41.161491,-8.653167,41.162031,-8.656434,41.16258,-8.660178,41.163192,-8.663112,41.163687,-8.666235,41.1642,-8.669169,41.164704,-8.670852,41.165136,-8.670942,41.166576,-8.66961,41.167962,-8.668098,41.168988,-8.66664,41.170005,-8.665767,41.170635,-8.66574,41.170671\n" +
                 "                             ));");
     }
@@ -90,15 +98,15 @@ public class Main {
 
         execute("select traj_id, traj\n" +
                 "from traj\n" +
-                "where traj_name='porto_raw_trajectory_full' and " +
-                "st_within(SearchWindow(Coordiante(-8.640717,41.160375),Coordiante(-8.638977,41.159277)));");
+                "where traj_name='Gtfs_simplified' and " +
+                "st_within(SearchWindow(Coordiante(40.73430659479621, -73.98939664060399),Coordiante(40.713433517779464, -73.93999311894093)));");
     }
 
     public static void testRangeQueryRadius(String baseDir){
         Transaction.getInstance().initEngine(baseDir);
         execute("select traj_id, traj\n" +
                 "from traj\n" +
-                "where traj_name='porto_raw_trajectory_full' and " +
+                "where traj_name='Porto' and " +
                 "st_within(SearchWindow(Coordiante(-8.639847,41.159826),50))");
     }
 
@@ -106,7 +114,7 @@ public class Main {
         Transaction.getInstance().initEngine(baseDir);
         execute("select traj_id, traj\n" +
                 "from traj\n" +
-                "where traj_name='porto_raw_trajectory' and " +
+                "where traj_name='Porto' and " +
                 "st_within(SearchWindow(Coordiante(-8.639847,41.159826),50)) and " +
                 "st_intersect(Trajectory(-8.639847,41.159826,-8.640351,41.159871,-8.642196,41.160114,-8.644455,41.160492,-8.646921,41.160951,-8.649999,41.161491,-8.653167,41.162031,-8.656434,41.16258,-8.660178,41.163192,-8.663112,41.163687,-8.666235,41.1642,-8.669169,41.164704,-8.670852,41.165136,-8.670942,41.166576,-8.66961,41.167962,-8.668098,41.168988,-8.66664,41.170005,-8.665767,41.170635,-8.66574,41.170671" +
                 "));");
@@ -132,7 +140,7 @@ public class Main {
     }
 
     public static void writeSql() {
-        String inputFilePath = "data/porto_raw_trajectory_full.txt"; // 替换为输入文件的路径
+        String inputFilePath = "data/Porto.txt"; // 替换为输入文件的路径
         String outputFilePath = "data/sql.txt"; // 替换为输出文件的路径
 
         try {
@@ -195,7 +203,7 @@ public class Main {
 
     public static void readAndWrite(){
         String csvFile = "/Users/woshi/Downloads/train(1).csv"; // CSV 文件路径
-        String txtFile = "data/porto_raw_trajectory_full.txt"; // 输出 TXT 文件路径
+        String txtFile = "data/Porto.txt"; // 输出 TXT 文件路径
         String line = "";
         String csvSeparator = ","; // CSV 文件的分隔符
         int lineNumber=0;
@@ -223,5 +231,10 @@ public class Main {
         Gtfs2DB.buildDB(gtfsPath,databasePath);
     }
 
+    public static void getMap(){
+        String valueString = MemManager.getInstance().search(new K("Qtfs/idMap")).valueString;
+        HashMap<Integer, String> integerStringHashMap = (HashMap<Integer, String>) KryoSerialization.deserializeFromString(valueString);
+        System.out.println(integerStringHashMap.toString());
+    }
 
 }

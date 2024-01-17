@@ -95,6 +95,8 @@ public class TorGraph {
     //value -- id
     public final Map<String, Integer> edgeIdLookup;
 
+    private String baseDir;
+
     private TorGraph(){
         this.towerVertexes = new HashMap<>();
         this.allPoints = new HashMap<>();
@@ -116,6 +118,7 @@ public class TorGraph {
         TorGraph graph = new TorGraph();
         graph.setting = setting;
         instances.put(instance_name, graph);
+        graph.baseDir=setting.TorchBase.split("/")[setting.TorchBase.split("/").length-2];
         return graph;
     }
 
@@ -200,15 +203,14 @@ public class TorGraph {
         String id_vertex = getFileNameWithoutExtension(setting.ID_VERTEX_LOOKUP);
         PlainSelect plainSelect = new PlainSelect().withFromItem(new Table(id_vertex));
         plainSelect.addSelectItems(new AllColumns());
-        EqualsTo where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(getFileNameWithoutExtension(setting.TorchBase)));
+        EqualsTo where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(this.baseDir));
         plainSelect.setWhere(where);
         WeakReference<SelectResult> id_vertex_result = new WeakReference<>(transaction.query(new Select().withSelectBody(plainSelect)));
 
         for (Tuple tuple : id_vertex_result.get().getTpl().tuplelist) {
-            int id = ((Long)tuple.tuple[1]).intValue();
+            int id = ((Long) tuple.tuple[1]).intValue();
             double lat = Double.parseDouble((String) tuple.tuple[2]);
             double lng = Double.parseDouble((String) tuple.tuple[3]);
-
             TowerVertex temp = new TowerVertex(lat, lng, id);
             towerVertexes.put(temp.hash, temp);
             idVertexLookup.put(id, temp);
@@ -219,14 +221,14 @@ public class TorGraph {
         String id_edge = getFileNameWithoutExtension(setting.ID_EDGE_LOOKUP);
         plainSelect = new PlainSelect().withFromItem(new Table(id_edge));
         plainSelect.addSelectItems(new AllColumns());
-        where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(getFileNameWithoutExtension(setting.TorchBase)));
+        where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(this.baseDir));
         plainSelect.setWhere(where);
         WeakReference<SelectResult> id_edge_result = new WeakReference<>(transaction.query(new Select().withSelectBody(plainSelect)));
         for (Tuple tuple:
                 id_edge_result.get().getTpl().tuplelist) {
-            int edgeId = ((Long)tuple.tuple[1]).intValue();
-            int vertexId1 = ((Long)tuple.tuple[2]).intValue();
-            int vertexId2 = ((Long)tuple.tuple[3]).intValue();
+            int edgeId = ((Long) tuple.tuple[1]).intValue();
+            int vertexId1 = ((Long) tuple.tuple[2]).intValue();
+            int vertexId2 = ((Long) tuple.tuple[3]).intValue();
             double len = Double.parseDouble((String)tuple.tuple[4]);
             TowerVertex t1 = idVertexLookup.get(vertexId1);
             TowerVertex t2 = idVertexLookup.get(vertexId2);

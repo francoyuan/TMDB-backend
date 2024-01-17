@@ -74,13 +74,13 @@ public class VertexGridIndex extends HashMap<Integer, Collection<Integer>> imple
         File file = new File(path);
         String parentFile = file.getParentFile().toString();
         File file1 = new File(parentFile + "/" + INDEX_FILE_POINT);
-        if (file1.exists() && tileLen==10) {
+        if (file1.exists() && tileLen==100) {
             load(parentFile);
         }else {
             logger.info("build spatial vertexGridIndex");
 //            if (load(path)) return true;
             _build();
-            if(tileLen==10) {
+            if(tileLen==100) {
                 save(parentFile);
             }
         }

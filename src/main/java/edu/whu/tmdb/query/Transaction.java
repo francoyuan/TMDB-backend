@@ -39,6 +39,7 @@ public class Transaction implements Runnable{
     private static Logger logger = LoggerFactory.getLogger(Transaction.class);
     public MemManager mem;
     public LevelManager levelManager;
+
     public LogManager log;
 
     private MemConnect memConnect;

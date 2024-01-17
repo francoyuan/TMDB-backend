@@ -45,7 +45,7 @@ import static edu.whu.tmdb.util.FileOperation.getFileNameWithoutExtension;
 public class Test {
 
     static Logger logger = LoggerFactory.getLogger(Test.class);
-    static FileSetting setting = new FileSetting("Torch_Porto");
+    static FileSetting setting;
 
 
     

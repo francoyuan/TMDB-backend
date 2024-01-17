@@ -1,6 +1,10 @@
 package edu.whu.tmdb.query.torch;
 
 import edu.whu.tmdb.query.Transaction;
+import edu.whu.tmdb.query.utils.KryoSerialization;
+import edu.whu.tmdb.storage.memory.MemManager;
+import edu.whu.tmdb.storage.utils.K;
+import edu.whu.tmdb.storage.utils.V;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 
@@ -142,7 +146,7 @@ public class TorchConnect {
     //将traj数据插入tmdb中，原始的轨迹数据
     public void insert(String srcPath){
         BufferedReader reader = null;
-        String sql="CREATE CLASS traj (traj_id int,user_id char,traj_name char,traj double[]);";
+        String sql="CREATE CLASS traj (traj_id char,user_id char,traj_name char,traj double[]);";
         Create create=new CreateImpl();
         try {
             create.create(CCJSqlParserUtil.parse(sql));
@@ -159,6 +163,7 @@ public class TorchConnect {
             List<List<TrajEntry>> list=new ArrayList<>();
             int limit=10000;
             int i=0;
+            HashMap<Integer,String> stringIdToIntId=new HashMap<>();
             // 逐行读取文件内容
             while ((line = reader.readLine()) != null) {
                 String[] sa=line.split("\\s+");
@@ -166,17 +171,22 @@ public class TorchConnect {
 //                traj=traj.replace("[","").replace("]","").replace(",","|");
                 temp=temp.replace("[","").replace("]","");
                 String[] split = temp.split(",");
-                if(split.length>200){
+                if(split.length>2000){
                     continue;
                 }
                 double[] traj= Arrays.stream(split).filter(e-> e.length()!=0).mapToDouble(e -> Double.parseDouble(e)).toArray();
-                sql="Insert into traj values ("+sa[0]+",-1,'"+getFileNameWithoutExtension(srcPath)+"',Array"+Arrays.toString(traj)+")";
+                sql="Insert into traj values ("+i+",-1,'"+getFileNameWithoutExtension(srcPath)+"',Array"+Arrays.toString(traj)+")";
 //                sql="Insert into traj values ("+sa[0]+",-1,'"+getFileNameWithoutExtension(srcPath)+"','"+traj+"')";
                 Transaction.getInstance().query(sql);
+                stringIdToIntId.put(i,sa[0]);
                 if(i++>limit){
                     break;
                 }
             }
+            MemManager.getInstance().memTable.put(
+                    new K(getFileNameWithoutExtension(srcPath)+"/idMap"),
+                    new V(KryoSerialization.serializeToString(stringIdToIntId)));
+
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

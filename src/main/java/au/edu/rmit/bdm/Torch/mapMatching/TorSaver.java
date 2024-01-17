@@ -75,6 +75,8 @@ public class TorSaver {
 
     private Transaction transaction;
 
+    private String baseDir;
+
 
     public TorSaver(TorGraph graph, FileSetting setting)  {
         this.setting = setting;
@@ -82,6 +84,7 @@ public class TorSaver {
         edgeInvertedList = new EdgeInvertedIndex(setting);
         vertexInvertedIndex = new VertexInvertedIndex(setting);
         this.transaction=Transaction.getInstance();
+        this.baseDir=setting.TorchBase.split("/")[setting.TorchBase.split("/").length-2];
     }
 
     /**
@@ -121,11 +124,8 @@ public class TorSaver {
         if (saveAll) {
             saveMeta();
             saveIdVertexLookupTable();
-            transaction.SaveAll();
             saveEdges();
-            transaction.SaveAll();
             getAfew();
-            transaction.SaveAll();
             addTime();
             edgeInvertedList.saveCompressed(setting.EDGE_INVERTED_INDEX);
             edgeCardSave();
@@ -160,7 +160,7 @@ public class TorSaver {
         List<Expression> expressions = new ArrayList<>();
         for (int i = 0; i < numNodes; i++){
             ExpressionList expressionList = new ExpressionList()
-                    .addExpressions(new StringValue(getFileNameWithoutExtension(setting.TorchBase)))
+                    .addExpressions(new StringValue(baseDir))
                     .addExpressions(new LongValue(""+i))
                     .addExpressions(new DoubleValue("" + nodeAccess.getLat(i)))
                     .addExpressions(new DoubleValue("" + nodeAccess.getLon(i)));
@@ -178,7 +178,7 @@ public class TorSaver {
         edges.sort(Comparator.comparing(e -> e.id));
 
 //        ensureExistence(setting.ID_EDGE_RAW);
-        idEdgeRawCreate();
+//        idEdgeRawCreate();
         idEdgeCreate();
 
         List<Expression> raw_expressions = new ArrayList<>();
@@ -188,20 +188,20 @@ public class TorSaver {
         for (TorEdge edge : edges){
             if (visited.contains(edge.id)) continue;
             visited.add(edge.id);
-            String[] split = edge.convertToDatabaseForm().split(Torch.SEPARATOR_1);
-            ExpressionList rawExpressionList = new ExpressionList()
-                    .addExpressions(new StringValue(getFileNameWithoutExtension(setting.TorchBase)))
-                    .addExpressions(new LongValue(split[0]))
-                    .addExpressions(new StringValue(split[1]))
-                    .addExpressions(new StringValue(split[2]))
-                    .addExpressions(new DoubleValue(split[3]))
-                    .addExpressions(new StringValue(split[4]))
-                    .addExpressions(new StringValue(split[5]));
-            RowConstructor rowRawConstructor = new RowConstructor().withExprList(rawExpressionList);
-            raw_expressions.add(rowRawConstructor);
+//            String[] split = edge.convertToDatabaseForm().split(Torch.SEPARATOR_1);
+//            ExpressionList rawExpressionList = new ExpressionList()
+//                    .addExpressions(new StringValue(baseDir))
+//                    .addExpressions(new LongValue(split[0]))
+//                    .addExpressions(new StringValue(split[1]))
+//                    .addExpressions(new StringValue(split[2]))
+//                    .addExpressions(new DoubleValue(split[3]))
+//                    .addExpressions(new StringValue(split[4]))
+//                    .addExpressions(new StringValue(split[5]));
+//            RowConstructor rowRawConstructor = new RowConstructor().withExprList(rawExpressionList);
+//            raw_expressions.add(rowRawConstructor);
 
             ExpressionList expressionList = new ExpressionList()
-                    .addExpressions(new StringValue(getFileNameWithoutExtension(setting.TorchBase)))
+                    .addExpressions(new StringValue(baseDir))
                     .addExpressions(new LongValue(""+edge.id))
                     .addExpressions(new LongValue(""+graph.vertexIdLookup.get(edge.baseVertex.hash)))
                     .addExpressions(new LongValue(""+graph.vertexIdLookup.get(edge.adjVertex.hash)))
@@ -209,9 +209,9 @@ public class TorSaver {
             RowConstructor rowConstructor = new RowConstructor().withExprList(expressionList);
             expressions.add(rowConstructor);
         }
-        ValuesStatement rawValuesStatement = new ValuesStatement().withExpressions(new ExpressionList().withExpressions(raw_expressions));
+//        ValuesStatement rawValuesStatement = new ValuesStatement().withExpressions(new ExpressionList().withExpressions(raw_expressions));
         ValuesStatement valuesStatement = new ValuesStatement().withExpressions(new ExpressionList().withExpressions(expressions));
-        idEdgeRawInsert(rawValuesStatement);
+//        idEdgeRawInsert(rawValuesStatement);
         idEdgeInsert(valuesStatement);
 
     }
@@ -230,7 +230,7 @@ public class TorSaver {
         List<Expression> edgeExpressions = new ArrayList<>();
         for (Trajectory<TowerVertex> traj : mappedTrajectories) {
             ExpressionList vertexExpressionList = new ExpressionList()
-                    .addExpressions(new StringValue(getFileNameWithoutExtension(setting.TorchBase)))
+                    .addExpressions(new StringValue(baseDir))
                     .addExpressions(new LongValue(traj.id));
             StringBuilder vertexBuilder = new StringBuilder();
             String hash;
@@ -250,7 +250,7 @@ public class TorSaver {
             vertexExpressions.add(vertexConstructor);
 
             ExpressionList edgeExpressionList = new ExpressionList()
-                    .addExpressions(new StringValue(getFileNameWithoutExtension(setting.TorchBase)))
+                    .addExpressions(new StringValue(baseDir))
                     .addExpressions(new LongValue(traj.id));
             StringBuilder edgeBuilder = new StringBuilder();
             Iterator<TorEdge> iterator = traj.edges.iterator();
@@ -276,7 +276,7 @@ public class TorSaver {
         String edgePartial = getFileNameWithoutExtension(setting.TRAJECTORY_EDGE_REPRESENTATION_PATH_PARTIAL);
         PlainSelect edgePartialSelect = new PlainSelect().addSelectItems(new AllColumns());
         edgePartialSelect.withFromItem(new Table(edgePartial));
-        Expression whereExpression =new EqualsTo(new Column().withColumnName("traj_name"),new StringValue(getFileNameWithoutExtension(setting.TorchBase)));
+        Expression whereExpression =new EqualsTo(new Column().withColumnName("traj_name"),new StringValue(baseDir));
         edgePartialSelect.setWhere(whereExpression);
         SelectResult edge = Transaction.getInstance().query((new Select().withSelectBody(edgePartialSelect)).toString());
 
@@ -321,8 +321,8 @@ public class TorSaver {
             Date d2 = new Date(individual_end);
 
             ExpressionList expressionList = new ExpressionList()
-                    .addExpressions(new StringValue(getFileNameWithoutExtension(setting.TorchBase)))
-                    .addExpressions(new LongValue(""+entry.getKey()))
+                    .addExpressions(new StringValue(baseDir))
+                    .addExpressions(new StringValue(""+entry.getKey()))
                     .addExpressions(new StringValue(sdf.format(d1)))
                     .addExpressions(new StringValue(sdf.format(d2)));
             RowConstructor rowConstructor = new RowConstructor().withExprList(expressionList);
@@ -350,7 +350,7 @@ public class TorSaver {
         PlainSelect edgeSelect = new PlainSelect();
         edgeSelect.addSelectItems(new AllColumns());
         edgeSelect.setFromItem(new Table(getFileNameWithoutExtension(edge)));
-        Expression whereExpression =new EqualsTo(new Column().withColumnName("traj_name"),new StringValue(getFileNameWithoutExtension(setting.TorchBase)));
+        Expression whereExpression =new EqualsTo(new Column().withColumnName("traj_name"),new StringValue(baseDir));
         edgeSelect.setWhere(whereExpression);
         Limit limit = new Limit();
         limit.setRowCount(new LongValue(""+100000));
@@ -375,7 +375,7 @@ public class TorSaver {
         PlainSelect vertexSelect = new PlainSelect();
         vertexSelect.addSelectItems(new AllColumns());
         vertexSelect.setFromItem(new Table(getFileNameWithoutExtension(vertex)));
-        whereExpression =new EqualsTo(new Column().withColumnName("traj_name"),new StringValue(getFileNameWithoutExtension(setting.TorchBase)));
+        whereExpression =new EqualsTo(new Column().withColumnName("traj_name"),new StringValue(baseDir));
         vertexSelect.setWhere(whereExpression);
         vertexSelect.setLimit(limit);
 
@@ -392,7 +392,7 @@ public class TorSaver {
         //使用jsqlparser构建一个create table statement
         //traj_name标识一条轨迹
         ColumnDefinition traj_name = new ColumnDefinition("traj_name", new ColDataType("char"));
-        ColumnDefinition id = new ColumnDefinition("id", new ColDataType("int"));
+        ColumnDefinition id = new ColumnDefinition("id", new ColDataType("char"));
         ColumnDefinition lat = new ColumnDefinition("lat", new ColDataType("double"));
         ColumnDefinition lng = new ColumnDefinition("lng", new ColDataType("double"));
         // Initialize the ArrayList and add the items
@@ -403,7 +403,6 @@ public class TorSaver {
         columns.add(lng);
         CreateTable createTable = new CreateTable().withTable(new Table(id_vertex)).addColumnDefinitions(columns);
         transaction.query(createTable);
-//        transaction.SaveAll();
     }
     private void idEdgeRawCreate(){
         //创建id_edge_raw 表
@@ -411,7 +410,7 @@ public class TorSaver {
 
         //使用jsqlparser构建一个create table statement,丢入transaction中进行创建
         ColumnDefinition traj_name = new ColumnDefinition("traj_name", new ColDataType("char"));
-        ColumnDefinition id = new ColumnDefinition("id", new ColDataType("int"));
+        ColumnDefinition id = new ColumnDefinition("id", new ColDataType("char"));
         ColumnDefinition lat = new ColumnDefinition("lat", new ColDataType("char"));
         ColumnDefinition lng = new ColumnDefinition("lng", new ColDataType("car"));
         ColumnDefinition length = new ColumnDefinition("length", new ColDataType("double"));
@@ -428,7 +427,6 @@ public class TorSaver {
         columns.add(isBackward);
         CreateTable createTable = new CreateTable().withTable(new Table(id_edge_raw)).addColumnDefinitions(columns);
         transaction.query(createTable);
-//        transaction.SaveAll();
     }
     private void idEdgeCreate() {
         //创建id_edge 表
@@ -436,7 +434,7 @@ public class TorSaver {
 
         //使用jsqlparser构建一个create table statement，丢入transaction中进行创建
         ColumnDefinition traj_name = new ColumnDefinition("traj_name", new ColDataType("char"));
-        ColumnDefinition id = new ColumnDefinition("id", new ColDataType("int"));
+        ColumnDefinition id = new ColumnDefinition("id", new ColDataType("char"));
         ColumnDefinition baseVertex = new ColumnDefinition("base_vertex", new ColDataType("int"));
         ColumnDefinition adjVertex = new ColumnDefinition("adj_vertex", new ColDataType("int"));
         ColumnDefinition edge_length = new ColumnDefinition("edge_length", new ColDataType("double"));
@@ -449,7 +447,6 @@ public class TorSaver {
         idEdgeColumns.add(edge_length);
         CreateTable createIdEdgeTable = new CreateTable().withTable(new Table(id_edge)).addColumnDefinitions(idEdgeColumns);
         transaction.query(createIdEdgeTable);
-//        transaction.SaveAll();
     }
     private void trajectoryEdgeCreate() {
         //创建id_edge 表
@@ -457,7 +454,7 @@ public class TorSaver {
 
         //使用jsqlparser构建一个create table statement，丢入transaction中进行创建
         ColumnDefinition traj_name = new ColumnDefinition("traj_name", new ColDataType("char"));
-        ColumnDefinition id = new ColumnDefinition("id", new ColDataType("int"));
+        ColumnDefinition id = new ColumnDefinition("id", new ColDataType("char"));
         ColumnDefinition edges = new ColumnDefinition("edges", new ColDataType("char"));
         // Initialize the ArrayList and add the items
         List<ColumnDefinition> trajectoryEdgeColumns = new ArrayList<>();
@@ -468,7 +465,6 @@ public class TorSaver {
                 .withTable(new Table(trajectoryEdge))
                 .addColumnDefinitions(trajectoryEdgeColumns);
         transaction.query(createTrajectoryEdgeTable);
-//        transaction.SaveAll();
     }
     private void trajectoryVertexCreate() {
         //创建id_edge 表
@@ -476,7 +472,7 @@ public class TorSaver {
 
         //使用jsqlparser构建一个create table statement，丢入transaction中进行创建
         ColumnDefinition traj_name = new ColumnDefinition("traj_name", new ColDataType("char"));
-        ColumnDefinition id = new ColumnDefinition("id", new ColDataType("int"));
+        ColumnDefinition id = new ColumnDefinition("id", new ColDataType("char"));
         ColumnDefinition vertexs = new ColumnDefinition("vertexs", new ColDataType("char"));
         // Initialize the ArrayList and add the items
         List<ColumnDefinition> trajectoryVertexColumns = new ArrayList<>();
@@ -487,7 +483,6 @@ public class TorSaver {
                 .withTable(new Table(trajectoryVertex))
                 .addColumnDefinitions(trajectoryVertexColumns);
         transaction.query(createTrajectoryVertexTable);
-//        transaction.SaveAll();
     }
 
     private void trajectoryTimePartialCreate()  {
@@ -496,7 +491,7 @@ public class TorSaver {
 
         //使用jsqlparser构建一个create table statement，丢入transaction中进行创建
         ColumnDefinition traj_name = new ColumnDefinition("traj_name", new ColDataType("char"));
-        ColumnDefinition id = new ColumnDefinition("id", new ColDataType("int"));
+        ColumnDefinition id = new ColumnDefinition("id", new ColDataType("char"));
         ColumnDefinition date1 = new ColumnDefinition("date1", new ColDataType("char"));
         ColumnDefinition date2 = new ColumnDefinition("date2", new ColDataType("char"));
         // Initialize the ArrayList and add the items
@@ -509,7 +504,6 @@ public class TorSaver {
                 .withTable(new Table(trajectoryTime))
                 .addColumnDefinitions(timePartialColumns);
         Transaction.getInstance().query(createTrajectoryEdgeTable);
-//        Transaction.getInstance().SaveAll();
     }
 
     private void idVertexInsert(ValuesStatement valuesStatement){
@@ -639,7 +633,6 @@ public class TorSaver {
         String key=setting.TorchBase.split("/")[0]+"/edgeCard";
         String v = KryoSerialization.serializeToString(edgeCard);
         MemManager.getInstance().memTable.put(new K(key),new V(v));
-        MemManager.getInstance().saveAll();
     }
 
 

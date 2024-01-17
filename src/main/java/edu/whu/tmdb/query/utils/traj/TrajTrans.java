@@ -30,7 +30,7 @@ public class TrajTrans {
     public static List<TrajEntry> getTraj(double[] a){
         ArrayList<TrajEntry> res = new ArrayList<>();
         for (int i = 0; i < a.length; i+=2) {
-            res.add(new Coordinate(a[i+1],a[i]));
+            res.add(new Coordinate(a[i],a[i+1]));
         }
         return res;
     }

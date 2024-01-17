@@ -20,6 +20,10 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * HiddenMarkovModel is a map-matching algorithm.
@@ -60,7 +64,8 @@ public class HiddenMarkovModel implements Mapper {
         List<Observation> queryTrajectory = new ArrayList<>(in.size());
         for (TrajEntry entry: in)
             queryTrajectory.add(new Observation(new GHPoint(entry.getLat(), entry.getLng())));
-        MatchResult ret = hmm.match(queryTrajectory);
+        MatchResult ret=null;
+        ret = hmm.match(queryTrajectory);
         List<EdgeMatch> matches = ret.getEdgeMatches();
 
         NodeAccess accessor = hopperGraph.getNodeAccess();
@@ -118,12 +123,19 @@ public class HiddenMarkovModel implements Mapper {
     public <T extends TrajEntry>List<Trajectory<TowerVertex>> batchMatch(List<Trajectory<T>> in) {
 
         List<Trajectory<TowerVertex>> mappedTrajectories = new ArrayList<>(in.size());
-
+//        ExecutorService threadPool = new ThreadPoolExecutor(10, 20, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<>());
         for (Trajectory<T> raw : in){
-            Trajectory<TowerVertex> t = match(raw);
-            mappedTrajectories.add(t);
+//            threadPool.execute(() -> {
+                try {
+                    Trajectory<TowerVertex> mappedTrajectory = match(raw);
+                    mappedTrajectories.add(mappedTrajectory);
+                } catch (Exception e) {
+                    logger.error("failed to map-matching trajectory {}", raw.id);
+                    logger.error("exception: {}", e.getMessage());
+                }
+//
         }
-
+        logger.info("mappedTrajectories size: " + mappedTrajectories.size());
         return mappedTrajectories;
     }
 }

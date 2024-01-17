@@ -30,29 +30,34 @@ public class GridCard {
 
     public GridCard init(String base){
         this.base=base;
-        gridCard= (HashMap<String, Integer>) KryoSerialization.deserializeFromString(
-                MemManager.getInstance().search(
-                        new K(base + "/gridCard")).valueString);
-        gridVertex= (HashMap<String, Integer>) KryoSerialization.deserializeFromString(
-                MemManager.getInstance().search(
-                        new K(base + "/gridVertex")).valueString);
-        gridTrajV= (HashMap<String, Integer>) KryoSerialization.deserializeFromString(
-                MemManager.getInstance().search(
-                        new K(base + "/gridTrajV")).valueString);
-        HashMap<String, Float> gridInfo = (HashMap<String, Float>)KryoSerialization.deserializeFromString(
-                MemManager.getInstance().search(
-                        new K(base + "/gridInfo")).valueString);
-        if(gridCard==null || gridInfo==null){
+        try {
+            gridCard = (HashMap<String, Integer>) KryoSerialization.deserializeFromString(
+                    MemManager.getInstance().search(
+                            new K(base + "/gridCard")).valueString);
+            gridVertex = (HashMap<String, Integer>) KryoSerialization.deserializeFromString(
+                    MemManager.getInstance().search(
+                            new K(base + "/gridVertex")).valueString);
+            gridTrajV = (HashMap<String, Integer>) KryoSerialization.deserializeFromString(
+                    MemManager.getInstance().search(
+                            new K(base + "/gridTrajV")).valueString);
+            HashMap<String, Float> gridInfo = (HashMap<String, Float>) KryoSerialization.deserializeFromString(
+                    MemManager.getInstance().search(
+                            new K(base + "/gridInfo")).valueString);
+            if (gridCard == null || gridInfo == null) {
+                return null;
+            }
+            this.deltaLat = gridInfo.get("deltaLat");
+            this.deltaLon = gridInfo.get("deltaLon");
+            this.upper = gridInfo.get("upper");
+            this.lower = gridInfo.get("lower");
+            this.left = gridInfo.get("left");
+            this.right = gridInfo.get("right");
+            this.horizontalTileNumber = gridInfo.get("horizontalTileNumber").intValue();
+            this.verticalTileNumber = gridInfo.get("verticalTileNumber").intValue();
+        }catch (Exception e){
+            e.printStackTrace();
             return null;
         }
-        this.deltaLat=gridInfo.get("deltaLat");
-        this.deltaLon=gridInfo.get("deltaLon");
-        this.upper=gridInfo.get("upper");
-        this.lower=gridInfo.get("lower");
-        this.left=gridInfo.get("left");
-        this.right=gridInfo.get("right");
-        this.horizontalTileNumber=gridInfo.get("horizontalTileNumber").intValue();
-        this.verticalTileNumber=gridInfo.get("verticalTileNumber").intValue();
         return this;
     }
 

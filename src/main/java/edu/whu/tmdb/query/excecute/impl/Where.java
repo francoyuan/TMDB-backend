@@ -97,19 +97,25 @@ public class  Where {
     }
 
     public int functionEstimate(Function expression){
-        GridCard porto = new GridCard().init("Porto");
-        if(porto==null) return 0;
+        GridCard gridCard = new GridCard().init("Gtfs");
+        if(gridCard==null) return 0;
         String name = expression.getName();
         switch(name.toLowerCase()){
-            case "st_within": return porto.getRangeCard(SpatialTrans.getSearchWindow(expression));
-            case "st_intersect": return porto.getPathCard(SpatialTrans.getTrajectory(expression));
-            case "st_contain": return porto.getStrictPathCard(SpatialTrans.getTrajectory(expression));
-//            case "st_similarity": return topKEstimate(expression);
+            case "st_within": return gridCard.getRangeCard(SpatialTrans.getSearchWindow(expression));
+            case "st_intersect": return gridCard.getPathCard(SpatialTrans.getTrajectory(expression));
+            case "st_contain": return gridCard.getStrictPathCard(SpatialTrans.getTrajectory(expression));
+            case "st_similarity": return getTopKCard(expression);
             default:
                 return 0;
         }
     }
-    
+
+    private int getTopKCard(Function expression) {
+        List<Expression> expressions = expression.getParameters().getExpressions();
+        int k=Integer.parseInt(expressions.get(1).toString());
+        return k;
+    }
+
 
     public SelectResult execute(Expression expression,SelectResult selectResult) throws TMDBException, IOException {
         SelectResult res=new SelectResult();

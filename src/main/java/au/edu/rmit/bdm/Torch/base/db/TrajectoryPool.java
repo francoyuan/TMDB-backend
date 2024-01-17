@@ -28,11 +28,15 @@ public abstract class TrajectoryPool {
 
     String tableName;
 
+    private String baseDir;
+
     FileSetting setting;
+
+
 
     TrajectoryPool(boolean isMem, FileSetting setting)  {
         this.setting=setting;
-
+        this.baseDir=setting.TorchBase.split("/")[setting.TorchBase.split("/").length-2];
         this.isMem = isMem;
 //        if (!isMem) {
 //            logger.info("init Torch_Porto.db version trajectory representation pool");
@@ -54,13 +58,13 @@ public abstract class TrajectoryPool {
         String table = getFileNameWithoutExtension(filePath);
         PlainSelect plainSelect = new PlainSelect().withFromItem(new Table(table));
         plainSelect.addSelectItems(new AllColumns());
-        EqualsTo where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(setting.TorchBase));
+        EqualsTo where = new EqualsTo(new Column().withColumnName("traj_name"), new StringValue(this.baseDir));
         plainSelect.setWhere(where);
         SelectResult result = Transaction.getInstance().query(new Select().withSelectBody(plainSelect));
         for (Tuple tuple :
                 result.getTpl().tuplelist) {
-            memPool.put((String)tuple.tuple[0]
-                    , ((String)tuple.tuple[1]).split(","));
+            memPool.putIfAbsent(String.valueOf(tuple.tuple[0])
+                    , (String.valueOf(tuple.tuple[1])).split(","));
         }
 
     }
@@ -77,7 +81,7 @@ public abstract class TrajectoryPool {
         }else{
             String sql="select edges from "+getFileNameWithoutExtension(setting.TRAJECTORY_EDGE_REPRESENTATION_PATH_PARTIAL)
                     +" where id="+trajId
-                    +" and traj_name='"+getFileNameWithoutExtension(setting.TorchBase)+"';";
+                    +" and traj_name='"+this.baseDir+"';";
             SelectResult query = Transaction.getInstance().query(sql);
             String[] temp = new String[0];
             if(!query.getTpl().tuplelist.isEmpty()){

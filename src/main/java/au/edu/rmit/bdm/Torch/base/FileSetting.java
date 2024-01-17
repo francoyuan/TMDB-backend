@@ -12,6 +12,8 @@ public class FileSetting {
 
     public static Map<String, FileSetting> map = new HashMap<>();
 
+
+
     public String prefix = "";
     public String hopperURI;
     public String metaURI;

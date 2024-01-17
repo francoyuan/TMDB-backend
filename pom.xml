@@ -62,6 +62,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.github.LukaszWiktor</groupId>
+            <artifactId>series-reducer</artifactId>
+            <version>0.2.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.8.5</version>

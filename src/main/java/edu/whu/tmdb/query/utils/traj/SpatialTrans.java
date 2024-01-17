@@ -25,18 +25,18 @@ public class SpatialTrans {
         if(swPara.get(1).getClass().getSimpleName().toLowerCase().equals("function")) {
             List<Expression> coor1 = ((net.sf.jsqlparser.expression.Function) swPara.get(0)).getParameters().getExpressions();
             List<Expression> coor2 = ((net.sf.jsqlparser.expression.Function) swPara.get(1)).getParameters().getExpressions();
-            Double lat1 = Double.parseDouble(coor1.get(1).toString());
-            Double lng1 = Double.parseDouble(coor1.get(0).toString());
+            Double lat1 = Double.parseDouble(coor1.get(0).toString());
+            Double lng1 = Double.parseDouble(coor1.get(1).toString());
             Coordinate coordinate1 = new Coordinate(lat1, lng1);
-            Double lat2 = Double.parseDouble(coor2.get(1).toString());
-            Double lng2 = Double.parseDouble(coor2.get(0).toString());
+            Double lat2 = Double.parseDouble(coor2.get(0).toString());
+            Double lng2 = Double.parseDouble(coor2.get(1).toString());
             Coordinate coordinate2 = new Coordinate(lat2, lng2);
             return new SearchWindow(coordinate1, coordinate2);
         }
         net.sf.jsqlparser.expression.Function coordinate = (net.sf.jsqlparser.expression.Function) swPara.get(0);
         List<Expression> coor = coordinate.getParameters().getExpressions();
-        Double lat=Double.parseDouble(coor.get(1).toString());
-        Double lng=Double.parseDouble(coor.get(0).toString());
+        Double lat=Double.parseDouble(coor.get(0).toString());
+        Double lng=Double.parseDouble(coor.get(1).toString());
         double radius = Double.parseDouble(swPara.get(1).toString());
         Coordinate coordinate1 = new Coordinate(lat, lng);
         return new SearchWindow(coordinate1, radius);

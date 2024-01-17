@@ -62,8 +62,9 @@ public class PrecomputedHiddenMarkovModel implements Mapper {
     private static final double GPS_ERROR_SIGMA = 50;
     private static final double TRANSITION_PROBABILITY_BETA = 2;
 
-    private static final double INITIAL_SEARCH_RANGE = 50;
-    private static final double INCREMENT = 20;
+    private static final double INITIAL_SEARCH_RANGE = 50; // 增大初始搜索范围
+    private static final double INCREMENT = 20; // 增大增量
+
 
     PrecomputedHiddenMarkovModel(TorGraph graph){
         if (!graph.isBuilt) throw new IllegalStateException("please build the graph first.");

@@ -5,7 +5,7 @@ import au.edu.rmit.bdm.Torch.base.Torch;
 public class MMProperties {
 
     public String vehicleType = Torch.vehicleType.CAR;
-    public String mmAlg = Torch.Algorithms.HMM_PRECOMPUTED;
+    public String mmAlg = Torch.Algorithms.HMM;
     public String trajSrcPath;
     public String osmPath;
     public int batchSize = 10000;
